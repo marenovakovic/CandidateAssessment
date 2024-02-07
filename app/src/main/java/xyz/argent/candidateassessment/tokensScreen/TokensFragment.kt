@@ -4,7 +4,6 @@ import xyz.argent.candidateassessment.basePresentation.BaseFragment
 import xyz.argent.candidateassessment.basePresentation.KeyboardUtils.showKeyboard
 import xyz.argent.candidateassessment.databinding.FragmentTokensBinding
 
-
 class TokensFragment : BaseFragment() {
     private val views by viewBinding(FragmentTokensBinding::inflate)
 
@@ -17,5 +16,3 @@ class TokensFragment : BaseFragment() {
         showKeyboard(views.searchBox)
     }
 }
-
-

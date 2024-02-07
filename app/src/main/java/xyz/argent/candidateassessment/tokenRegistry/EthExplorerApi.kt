@@ -8,12 +8,10 @@ interface EthExplorerApi {
     @GET("/getTopTokens")
     suspend fun getTopTokens(
         @Query("limit") limit: Int,
-        @Query("apiKey") apiKey: String
+        @Query("apiKey") apiKey: String,
     ): TopTokensResponse
 
-    data class TopTokensResponse(
-        val tokens: List<TokenResponse>
-    )
+    data class TopTokensResponse(val tokens: List<TokenResponse>)
 
     data class TokenResponse(
         val address: String,

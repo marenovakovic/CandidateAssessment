@@ -1,12 +1,13 @@
 package xyz.argent.candidateassessment.basePresentation
 
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.databinding.ActivityMainBinding
 import xyz.argent.candidateassessment.welcomeScreen.WelcomeFragment
 
-class MainActivity : BaseActivity() {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 

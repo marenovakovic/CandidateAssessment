@@ -9,10 +9,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import xyz.argent.candidateassessment.balanceRetriever.EtherscanApi
 import xyz.argent.candidateassessment.tokenRegistry.EthExplorerApi
 
-/** Some manual dependency injection to simplify here */
-class Dependencies(
-    val appContext: App,
-) {
+class Dependencies(val appContext: App) {
 
     val etherscanApi: EtherscanApi
     val ethExplorerApi: EthExplorerApi

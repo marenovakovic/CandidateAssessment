@@ -68,7 +68,7 @@ class GetBalancesTest {
     }
 
     @Test
-    fun `call api with Constants address and apiKey`() = runTest {
+    fun `call api with Constants wallet address and apiKey`() = runTest {
         val api = spyk(EtherscanApiMock)
         val getBalances = getBalances(api)
         val token = tenTokens.first()

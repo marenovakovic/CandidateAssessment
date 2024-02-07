@@ -1,4 +1,4 @@
-package xyz.argent.candidateassessment.tokenRegistry
+package xyz.argent.candidateassessment.tokens
 
 import retrofit2.http.GET
 import retrofit2.http.Query

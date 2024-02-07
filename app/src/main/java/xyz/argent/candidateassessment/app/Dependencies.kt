@@ -6,8 +6,8 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import xyz.argent.candidateassessment.balanceRetriever.EtherscanApi
-import xyz.argent.candidateassessment.tokenRegistry.EthExplorerApi
+import xyz.argent.candidateassessment.balance.EtherscanApi
+import xyz.argent.candidateassessment.tokens.EthExplorerApi
 
 class Dependencies(val appContext: App) {
 

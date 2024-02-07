@@ -1,4 +1,4 @@
-package xyz.argent.candidateassessment.balanceRetriever
+package xyz.argent.candidateassessment.balance
 
 import retrofit2.http.GET
 import retrofit2.http.Query

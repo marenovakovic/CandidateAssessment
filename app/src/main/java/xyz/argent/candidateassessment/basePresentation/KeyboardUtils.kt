@@ -11,5 +11,4 @@ object KeyboardUtils {
             editText.context.getSystemService<InputMethodManager>()!!.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
         }
     }
-
 }

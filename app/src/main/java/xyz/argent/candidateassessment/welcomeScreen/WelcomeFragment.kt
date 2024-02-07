@@ -13,6 +13,7 @@ class WelcomeFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         views.walletAddress.text = Constants.walletAddress
         views.tokensButton.setOnClickListener {
             mainActivity!!.pushFragment(TokensFragment())

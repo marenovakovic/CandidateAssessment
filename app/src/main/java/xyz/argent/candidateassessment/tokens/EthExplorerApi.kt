@@ -24,14 +24,15 @@ interface EthExplorerApi {
     )
 }
 
+val tokensResponse =
+    Moshi
+        .Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+        .adapter(EthExplorerApi.TopTokensResponse::class.java).fromJson(topTokensJson)!!
+
+val tokens = tokensResponse.tokens.map(EthExplorerApi.TokenResponse::toToken)
+
 object EthExplorerApiMock : EthExplorerApi {
-    override suspend fun getTopTokens(
-        limit: Int,
-        apiKey: String,
-    ): EthExplorerApi.TopTokensResponse =
-        Moshi
-            .Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
-            .adapter(EthExplorerApi.TopTokensResponse::class.java).fromJson(topTokensJson)!!
+    override suspend fun getTopTokens(limit: Int, apiKey: String) = tokensResponse
 }

@@ -2,27 +2,46 @@ package xyz.argent.candidateassessment.balance
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import xyz.argent.candidateassessment.CloseableCoroutineScope
+import xyz.argent.candidateassessment.tokens.GetTokens
 
-data class BalanceState(val query: String, val balances: List<Balance>) {
+data class BalanceState(val query: String, val balances: Balances) {
     companion object {
-        val Initial = BalanceState("", emptyList())
+        val Initial = BalanceState("", Balances.Initial)
     }
 }
 
-class BalanceViewModel(
+sealed interface Balances {
+    data object Initial : Balances
+    data object Loading : Balances
+    data class Success(val balances: List<Balance>) : Balances
+}
+
+@HiltViewModel
+class BalanceViewModel @Inject constructor(
+    coroutineScope: CloseableCoroutineScope,
     private val savedStateHandle: SavedStateHandle,
-) : ViewModel() {
+    private val getBalances: GetBalances,
+    private val getTokens: GetTokens,
+) : ViewModel(coroutineScope) {
     private val query = savedStateHandle.getStateFlow(QUERY, "")
 
-    val state =
+    private val balances =
         query
-            .map { BalanceState(it, emptyList()) }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BalanceState.Initial)
+            .map { query -> getTokens().filter { it.name.orEmpty().contains(query) } }
+            .map(getBalances::invoke)
+            .map(Balances::Success)
+
+    val state = combine(query, balances) { query, balances ->
+        BalanceState(query, balances)
+    }
+        .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), BalanceState.Initial)
 
     fun search(query: String) {
         savedStateHandle[QUERY] = query

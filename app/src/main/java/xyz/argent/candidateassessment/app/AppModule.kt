@@ -6,8 +6,11 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import xyz.argent.candidateassessment.CloseableCoroutineScope
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -28,4 +31,8 @@ object AppModule {
         Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
+
+    @Provides
+    fun closeableCoroutineScope() =
+        CloseableCoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 }

@@ -23,7 +23,6 @@ class GetBalances @Inject constructor(
                 .foldIndexed(emptyList<Balance>()) { i, acc, tokens ->
                     val balances = getBalances(tokens)
                     if (i > 0) delay(strategy.perMillis)
-                    println("after")
                     acc + balances
                 }
         }

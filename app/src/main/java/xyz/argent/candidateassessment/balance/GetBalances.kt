@@ -18,11 +18,11 @@ class GetBalances @Inject constructor(
 ) {
     suspend operator fun invoke(tokens: List<Token>) =
         coroutineScope {
-            tokens
-                .chunked(strategy.maxRequests)
+            val chunks = tokens.chunked(strategy.maxRequests)
+            chunks
                 .foldIndexed(emptyList<Balance>()) { i, acc, tokens ->
                     val balances = getBalances(tokens)
-                    if (i > 0) delay(strategy.perMillis)
+                    if (i != chunks.size - 1) delay(strategy.perMillis)
                     acc + balances
                 }
         }

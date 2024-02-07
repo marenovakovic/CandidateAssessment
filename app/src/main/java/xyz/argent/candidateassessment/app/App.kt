@@ -8,7 +8,7 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        dependencies = Dependencies(this)
+        dependencies = Dependencies()
     }
 
     companion object {

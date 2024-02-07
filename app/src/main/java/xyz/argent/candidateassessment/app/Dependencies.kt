@@ -9,7 +9,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import xyz.argent.candidateassessment.balance.EtherscanApi
 import xyz.argent.candidateassessment.tokens.EthExplorerApi
 
-class Dependencies(val appContext: App) {
+class Dependencies {
 
     val etherscanApi: EtherscanApi
     val ethExplorerApi: EthExplorerApi

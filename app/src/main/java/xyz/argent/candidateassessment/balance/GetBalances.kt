@@ -20,7 +20,7 @@ class GetBalances @Inject constructor(
         coroutineScope {
             tokens
                 .chunked(strategy.maxRequests)
-                .foldIndexed(emptyList<Result<Balance>>()) { i, acc, tokens ->
+                .foldIndexed(emptyList<Balance>()) { i, acc, tokens ->
                     val balances = getBalances(tokens)
                     if (i > 0) delay(strategy.perMillis)
                     acc + balances
@@ -31,16 +31,15 @@ class GetBalances @Inject constructor(
         tokens
             .map { getBalance(it) }
             .awaitAll()
-            .map { result ->
-                result.map { (token, balanceResponse) ->
-                    Balance(token = token, balance = balanceResponse.result.toDouble())
-                }
+            .map { (token, balanceResponse) ->
+                val balance = balanceResponse.map { it.result.toDouble() }
+                Balance(token = token, balance = balance)
             }
 
     private suspend fun CoroutineScope.getBalance(token: Token) =
         async {
-            runCatching {
-                token to api.getTokenBalance(
+            token to runCatching {
+                api.getTokenBalance(
                     token.address,
                     Constants.walletAddress,
                     Constants.etherscanApiKey,

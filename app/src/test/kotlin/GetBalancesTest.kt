@@ -51,7 +51,7 @@ class GetBalancesTest {
         val balances = getBalances(listOf(token))
 
         assertEquals(1, balances.size)
-        assertEquals(token, balances.single().getOrThrow().token)
+        assertEquals(token, balances.single().token)
     }
 
     @Test
@@ -88,7 +88,7 @@ class GetBalancesTest {
         val balances = getBalances(listOf(token))
 
         assertEquals(1, balances.size)
-        assertTrue(balances.single().isFailure)
+        assertTrue(balances.single().balance.isFailure)
     }
 
     @Test
@@ -99,7 +99,7 @@ class GetBalancesTest {
         val balances = getBalances(tokens)
 
         assertEquals(tokens.size, balances.size)
-        assertTrue(balances.all { it.isFailure })
+        assertTrue(balances.map { it.balance }.all { it.isFailure })
     }
 
     @Test

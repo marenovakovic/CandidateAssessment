@@ -1,5 +1,7 @@
 package xyz.argent.candidateassessment.tokens
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -17,7 +19,19 @@ interface EthExplorerApi {
         val address: String,
         val name: String?,
         val symbol: String?,
-        val decimals: Long?,
+        val decimals: Double?,
         val image: String?,
     )
+}
+
+object EthExplorerApiMock : EthExplorerApi {
+    override suspend fun getTopTokens(
+        limit: Int,
+        apiKey: String,
+    ): EthExplorerApi.TopTokensResponse =
+        Moshi
+            .Builder()
+            .add(KotlinJsonAdapterFactory())
+            .build()
+            .adapter(EthExplorerApi.TopTokensResponse::class.java).fromJson(topTokensJson)!!
 }

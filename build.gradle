@@ -14,7 +14,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.google.dagger.hilt.android' version '2.44' apply false
+    id 'com.google.dagger.hilt.android' version '2.50' apply false
 }
 
 task clean(type: Delete) {

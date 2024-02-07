@@ -56,14 +56,21 @@ class GetBalancesTest {
 
     @Test
     fun `get balance from the api`() = runTest {
-        val api = spyk(EtherscanApiMock)
-        val getBalances = getBalances(api)
+        val api = EtherscanApiMock
+        val spy = spyk(api)
+        val getBalances = getBalances(spy)
         val token = tenTokens.first()
 
-        getBalances(listOf(token))
+        val balances = getBalances(listOf(token))
+
+        assertEquals(token, balances.single().token)
+        assertEquals(
+            api.getTokenBalance(token.address, "", "").result.toDouble(),
+            balances.single().balance.getOrThrow(),
+        )
 
         coVerify(exactly = 1) {
-            api.getTokenBalance(token.address, any(), any())
+            spy.getTokenBalance(token.address, any(), any())
         }
     }
 

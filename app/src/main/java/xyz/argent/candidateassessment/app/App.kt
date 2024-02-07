@@ -4,15 +4,4 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class App : Application() {
-
-    override fun onCreate() {
-        super.onCreate()
-        dependencies = Dependencies()
-    }
-
-    companion object {
-        lateinit var dependencies: Dependencies
-            private set
-    }
-}
+class App : Application()

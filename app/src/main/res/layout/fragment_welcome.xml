@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".welcomeScreen.WelcomeFragment">
+    tools:context=".welcome.WelcomeFragment">
 
     <TextView
         android:id="@+id/wallet_address_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Wallet address"
+        android:text="@string/wallet_address"
         app:layout_constraintBottom_toTopOf="@id/wallet_address"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="48dp"
-        android:text="ERC20 Tokens"
+        android:text="@string/erc20_tokens"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

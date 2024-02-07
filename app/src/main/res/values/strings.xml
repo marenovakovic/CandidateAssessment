@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">CandidateAssessment</string>
-    <string name="search_for_you_tokens_here">Search for you tokens here...</string>
-
-
+    <string name="search_for_you_tokens_here">Search for you tokens here…</string>
+    <string name="erc20_tokens">ERC20 Tokens</string>
+    <string name="wallet_address">Wallet address</string>
+    <string name="welcome">Welcome</string>
+    <string name="tokens">Tokens</string>
+    <string name="search_tokens">Search tokens</string>
 </resources>

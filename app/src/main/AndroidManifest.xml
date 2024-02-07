@@ -16,7 +16,7 @@
 
         android:theme="@style/Theme.CandidateAssessment">
         <activity
-            android:name=".basePresentation.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.CandidateAssessment.NoActionBar">
             <intent-filter>

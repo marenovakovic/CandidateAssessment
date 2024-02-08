@@ -3,7 +3,6 @@ import app.cash.turbine.test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -54,8 +53,9 @@ class BalanceViewModelTest {
             skipItems(1)
 
             viewModel.search(query)
-            advanceTimeBy(500)
 
+            assertEquals(BalanceState(query, Balances.Initial), awaitItem())
+            assertEquals(BalanceState(query, Balances.Loading), awaitItem())
             val tokens = getTokens().filter { it.name.orEmpty().contains(query) }
             val expectedBalances = getBalances(tokens)
             assertEquals(BalanceState(query, Balances.Success(expectedBalances)), awaitItem())

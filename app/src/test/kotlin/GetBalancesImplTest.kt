@@ -1,7 +1,7 @@
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import xyz.argent.candidateassessment.balance.GetBalances
+import xyz.argent.candidateassessment.balance.GetBalancesImpl
 import xyz.argent.candidateassessment.balance.GetTokenBalance
 import xyz.argent.candidateassessment.tokens.tokens
 import kotlin.random.Random
@@ -14,11 +14,11 @@ import kotlin.time.measureTime
 private val tenTokens = tokens.take(10)
 
 @OptIn(ExperimentalTime::class)
-class GetBalancesTest {
+class GetBalancesImplTest {
 
     private fun getBalances(
         getTokenBalance: GetTokenBalance = GetTokenBalance { Result.success(Random.nextDouble()) },
-    ) = GetBalances(getTokenBalance)
+    ) = GetBalancesImpl(getTokenBalance)
 
     @Test
     fun `for empty token list return empty balance list`() = runTest {

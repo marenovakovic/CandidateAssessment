@@ -9,12 +9,11 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import xyz.argent.candidateassessment.CloseableCoroutineScope
+import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.BalanceState
 import xyz.argent.candidateassessment.balance.BalanceViewModel
 import xyz.argent.candidateassessment.balance.Balances
 import xyz.argent.candidateassessment.balance.GetBalances
-import xyz.argent.candidateassessment.balance.GetBalancesStrategy
-import xyz.argent.candidateassessment.balance.GetTokenBalance
 import xyz.argent.candidateassessment.tokens.GetTokens
 import xyz.argent.candidateassessment.tokens.Token
 import xyz.argent.candidateassessment.tokens.tokens
@@ -27,10 +26,15 @@ import kotlin.test.assertEquals
 class BalanceViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testCoroutineScope = CloseableCoroutineScope(testDispatcher)
-    private val getTokenBalance = GetTokenBalance { Result.success(0.0) }
-    private val getBalances = GetBalances(getTokenBalance, GetBalancesStrategy.MaxRequestsNoDelay)
+    private val getBalances =
+        GetBalances { tokens ->
+            tokens.map { Balance(it, Result.success(0.0)) }
+        }
     private val tenTokens = tokens.take(10)
-    private fun viewModel(getTokens: () -> List<Token> = { tenTokens }) =
+    private fun viewModel(
+        getTokens: () -> List<Token> = { tenTokens },
+        getBalances: GetBalances = this.getBalances,
+    ) =
         BalanceViewModel(
             coroutineScope = testCoroutineScope,
             savedStateHandle = SavedStateHandle(),
@@ -122,7 +126,7 @@ class BalanceViewModelTest {
         val tokens = listOf(token)
         val query = token.name!!.lowercase()
 
-        val viewModel = viewModel { listOf(token) }
+        val viewModel = viewModel(getTokens = { listOf(token) })
 
         viewModel.state.test {
             skipItems(1)

@@ -8,19 +8,14 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import xyz.argent.candidateassessment.tokens.Token
 
-data class GetBalancesStrategy private constructor(val maxRequests: Int, val perMillis: Long) {
-    companion object {
-        val MaxRequestsNoDelay = GetBalancesStrategy(Int.MAX_VALUE, 0)
-        val FivePerSecond = GetBalancesStrategy(5, 1_000)
-    }
-}
+fun interface GetBalances : suspend (List<Token>) -> List<Balance>
 
 @Suppress("SuspendFunctionOnCoroutineScope")
-class GetBalances @Inject constructor(
+class GetBalancesImpl @Inject constructor(
     private val getTokenBalance: GetTokenBalance,
     private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
-) {
-    suspend operator fun invoke(tokens: List<Token>) =
+) : GetBalances {
+    override suspend operator fun invoke(tokens: List<Token>) =
         coroutineScope {
             val chunks = tokens.chunked(strategy.maxRequests)
             chunks

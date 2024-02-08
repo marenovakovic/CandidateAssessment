@@ -7,7 +7,7 @@ import xyz.argent.candidateassessment.tokens.Token
 fun interface GetTokenBalance : suspend (Token) -> Result<Double>
 
 class GetTokenBalanceImpl @Inject constructor(private val api: EtherscanApi) : GetTokenBalance {
-    override suspend fun invoke(token: Token): Result<Double> =
+    override suspend fun invoke(token: Token) =
         runCatching {
             api.getTokenBalance(
                 token.address,

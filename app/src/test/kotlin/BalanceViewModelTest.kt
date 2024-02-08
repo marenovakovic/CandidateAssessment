@@ -1,7 +1,5 @@
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import io.mockk.coEvery
-import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -15,7 +13,6 @@ import xyz.argent.candidateassessment.balance.BalanceViewModel
 import xyz.argent.candidateassessment.balance.Balances
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.tokens.GetTokens
-import xyz.argent.candidateassessment.tokens.Token
 import xyz.argent.candidateassessment.tokens.tokens
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -32,16 +29,14 @@ class BalanceViewModelTest {
         }
     private val tenTokens = tokens.take(10)
     private fun viewModel(
-        getTokens: () -> List<Token> = { tenTokens },
+        getTokens: GetTokens = GetTokens { Result.success(tenTokens) },
         getBalances: GetBalances = this.getBalances,
     ) =
         BalanceViewModel(
             coroutineScope = testCoroutineScope,
             savedStateHandle = SavedStateHandle(),
             getBalances = getBalances,
-            getTokens = mockk<GetTokens> {
-                coEvery { this@mockk.invoke() } returns getTokens()
-            },
+            getTokens = getTokens,
         )
 
     @BeforeTest
@@ -126,7 +121,7 @@ class BalanceViewModelTest {
         val tokens = listOf(token)
         val query = token.name!!.lowercase()
 
-        val viewModel = viewModel(getTokens = { listOf(token) })
+        val viewModel = viewModel(getTokens = { Result.success(listOf(token)) })
 
         viewModel.state.test {
             skipItems(1)

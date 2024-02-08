@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -32,17 +31,28 @@ class BalanceViewModel @Inject constructor(
     private val isLoading = MutableStateFlow(false)
     private val balances: Flow<Balances> =
         query
-            .filter(String::isNotBlank)
-            .onEach { isLoading.update { true } }
+            .onEach { if (it.isNotBlank()) isLoading.update { true } }
             .debounce(500)
-            .map { query -> getTokens().filter { it.name.orEmpty().contains(query) } }
+            .map { query ->
+                if (query.isNotBlank())
+                    getTokens()
+                        .filter { it.name.orEmpty().contains(query) }
+                else emptyList()
+            }
             .map(getBalances::invoke)
             .onEach { isLoading.update { false } }
             .map(Balances::Success)
             .onStart<Balances> { emit(Balances.Initial) }
 
     val state = combine(query, balances, isLoading) { query, balances, isLoading ->
-        BalanceState(query, if (isLoading) Balances.Loading else balances)
+        BalanceState(
+            query = query,
+            balances = when {
+                isLoading -> Balances.Loading
+                query.isBlank() -> Balances.Initial
+                else -> balances
+            },
+        )
     }
         .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), BalanceState.Initial)
 

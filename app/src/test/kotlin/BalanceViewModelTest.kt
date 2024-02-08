@@ -63,4 +63,44 @@ class BalanceViewModelTest {
 
         assertEquals(query, viewModel.state.value.query)
     }
+
+    @Test
+    fun `searching with empty query string shows initial state`() = runTest {
+        val query = ""
+
+        val viewModel = viewModel()
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.search(query)
+
+            expectNoEvents()
+        }
+
+        assertEquals(query, viewModel.state.value.query)
+    }
+
+    @Test
+    fun `search with non-empty and then with empty query`() = runTest {
+        val query = "a"
+
+        val viewModel = viewModel()
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.search(query)
+
+            assertEquals(BalanceState(query, Balances.Initial), awaitItem())
+            assertEquals(BalanceState(query, Balances.Loading), awaitItem())
+            val tokens = getTokens().filter { it.name.orEmpty().contains(query) }
+            val expectedBalances = getBalances(tokens)
+            assertEquals(BalanceState(query, Balances.Success(expectedBalances)), awaitItem())
+
+            viewModel.search("")
+
+            assertEquals(BalanceState.Initial, awaitItem())
+        }
+    }
 }

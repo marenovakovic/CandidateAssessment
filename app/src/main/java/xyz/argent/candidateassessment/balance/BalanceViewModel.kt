@@ -33,8 +33,8 @@ class BalanceViewModel @Inject constructor(
     private val balances: Flow<Balances> =
         query
             .filter(String::isNotBlank)
-            .debounce(500)
             .onEach { isLoading.update { true } }
+            .debounce(500)
             .map { query -> getTokens().filter { it.name.orEmpty().contains(query) } }
             .map(getBalances::invoke)
             .onEach { isLoading.update { false } }

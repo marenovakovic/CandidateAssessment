@@ -1,6 +1,6 @@
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,7 +35,7 @@ class BalanceViewModelTest {
             savedStateHandle = SavedStateHandle(),
             getBalances = getBalances,
             getTokens = mockk<GetTokens> {
-                every { this@mockk.invoke() } returns getTokens()
+                coEvery { this@mockk.invoke() } returns getTokens()
             },
         )
 

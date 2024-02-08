@@ -9,3 +9,4 @@ refactoring + starting BalanceViewModel - 1 pomodoro
 prepare for testing on the device - 1 pomodoro
 UI improvements - 1 pomodoro
 improving searching tokens - 1 pomodoro
+initial GetTokens implementation that actually calls the API - 1 pomodoro

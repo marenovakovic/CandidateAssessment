@@ -68,15 +68,15 @@ private fun TokensScreen(
         },
     ) {
         LazyColumn(
-            contentPadding = it,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
+            contentPadding = it,
+            modifier = Modifier.fillMaxSize(),
         ) {
             stickyHeader {
                 OutlinedTextField(
-                    label = { Text(text = stringResource(R.string.search_tokens)) },
                     value = state.query,
                     onValueChange = onQueryChanged,
+                    label = { Text(text = stringResource(R.string.search_tokens)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

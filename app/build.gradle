@@ -67,7 +67,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
-    implementation platform('androidx.compose:compose-bom:2024.01.00')
+    implementation platform('androidx.compose:compose-bom:2024.02.00')
     implementation 'androidx.compose.runtime:runtime'
     implementation 'androidx.compose.foundation:foundation'
     implementation 'androidx.compose.foundation:foundation-layout'

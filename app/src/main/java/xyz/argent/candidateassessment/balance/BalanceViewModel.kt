@@ -6,6 +6,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import xyz.argent.candidateassessment.CloseableCoroutineScope
@@ -34,6 +36,8 @@ class BalanceViewModel @Inject constructor(
 
     private val balances =
         query
+            .filter(String::isNotBlank)
+            .debounce(500)
             .map { query -> getTokens().filter { it.name.orEmpty().contains(query) } }
             .map(getBalances::invoke)
             .map(Balances::Success)

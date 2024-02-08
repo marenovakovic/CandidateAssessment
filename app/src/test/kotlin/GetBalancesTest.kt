@@ -1,38 +1,24 @@
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import io.mockk.coVerify
-import io.mockk.spyk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import xyz.argent.candidateassessment.app.Constants
-import xyz.argent.candidateassessment.balance.EtherscanApi
-import xyz.argent.candidateassessment.balance.EtherscanApiDelay
-import xyz.argent.candidateassessment.balance.EtherscanApiFail
-import xyz.argent.candidateassessment.balance.EtherscanApiMock
 import xyz.argent.candidateassessment.balance.GetBalances
-import xyz.argent.candidateassessment.tokens.EthExplorerApi
-import xyz.argent.candidateassessment.tokens.toToken
-import xyz.argent.candidateassessment.tokens.topTokensJson
+import xyz.argent.candidateassessment.balance.GetTokenBalance
+import xyz.argent.candidateassessment.tokens.tokens
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-private val tenTokens =
-    Moshi
-        .Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-        .adapter(EthExplorerApi.TopTokensResponse::class.java).fromJson(topTokensJson)!!
-        .tokens
-        .take(10)
-        .map(EthExplorerApi.TokenResponse::toToken)
+private val tenTokens = tokens.take(10)
 
 @OptIn(ExperimentalTime::class)
 class GetBalancesTest {
 
-    private fun getBalances(api: EtherscanApi = EtherscanApiMock) = GetBalances(api)
+    private fun getBalances(
+        getTokenBalance: GetTokenBalance = GetTokenBalance { Result.success(Random.nextDouble()) },
+    ) = GetBalances(getTokenBalance)
 
     @Test
     fun `for empty token list return empty balance list`() = runTest {
@@ -55,42 +41,9 @@ class GetBalancesTest {
     }
 
     @Test
-    fun `get balance from the api`() = runTest {
-        val api = EtherscanApiMock
-        val spy = spyk(api)
-        val getBalances = getBalances(spy)
-        val token = tenTokens.first()
-
-        val balances = getBalances(listOf(token))
-
-        assertEquals(token, balances.single().token)
-        assertEquals(
-            api.getTokenBalance(token.address, "", "").result.toDouble(),
-            balances.single().balance.getOrThrow(),
-        )
-
-        coVerify(exactly = 1) {
-            spy.getTokenBalance(token.address, any(), any())
-        }
-    }
-
-    @Test
-    fun `call api with Constants wallet address and apiKey`() = runTest {
-        val api = spyk(EtherscanApiMock)
-        val getBalances = getBalances(api)
-        val token = tenTokens.first()
-
-        getBalances(listOf(token))
-
-        coVerify(exactly = 1) {
-            api.getTokenBalance(any(), Constants.walletAddress, Constants.etherscanApiKey)
-        }
-    }
-
-    @Test
     fun `error getting balance for single`() = runTest {
         val token = tenTokens.first()
-        val getBalances = getBalances(EtherscanApiFail)
+        val getBalances = getBalances { Result.failure(Throwable()) }
 
         val balances = getBalances(listOf(token))
 
@@ -101,7 +54,7 @@ class GetBalancesTest {
     @Test
     fun `error getting balance for all tokens`() = runTest {
         val tokens = tenTokens
-        val getBalances = getBalances(EtherscanApiFail)
+        val getBalances = getBalances { Result.failure(Throwable()) }
 
         val balances = getBalances(tokens)
 
@@ -112,7 +65,10 @@ class GetBalancesTest {
     @Test
     fun `get 5 balances for tokens in parallel`() = runTest {
         val delayMillis = 1_000L
-        val getBalances = getBalances(EtherscanApiDelay(delayMillis))
+        val getBalances = getBalances {
+            delay(delayMillis)
+            Result.success(Random.nextDouble())
+        }
 
         launch {
             val duration = testScheduler.timeSource.measureTime {

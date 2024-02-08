@@ -12,9 +12,9 @@ import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.balance.BalanceState
 import xyz.argent.candidateassessment.balance.BalanceViewModel
 import xyz.argent.candidateassessment.balance.Balances
-import xyz.argent.candidateassessment.balance.EtherscanApiMock
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.balance.GetBalancesStrategy
+import xyz.argent.candidateassessment.balance.GetTokenBalance
 import xyz.argent.candidateassessment.tokens.GetTokens
 import xyz.argent.candidateassessment.tokens.Token
 import xyz.argent.candidateassessment.tokens.tokens
@@ -27,7 +27,8 @@ import kotlin.test.assertEquals
 class BalanceViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testCoroutineScope = CloseableCoroutineScope(testDispatcher)
-    private val getBalances = GetBalances(EtherscanApiMock, GetBalancesStrategy.MaxRequestsNoDelay)
+    private val getTokenBalance = GetTokenBalance { Result.success(0.0) }
+    private val getBalances = GetBalances(getTokenBalance, GetBalancesStrategy.MaxRequestsNoDelay)
     private val tenTokens = tokens.take(10)
     private fun viewModel(getTokens: () -> List<Token> = { tenTokens }) =
         BalanceViewModel(

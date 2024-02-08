@@ -1,6 +1,7 @@
 package xyz.argent.candidateassessment.balance
 
 import com.squareup.moshi.Moshi
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -11,17 +12,22 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 @Module
 @InstallIn(SingletonComponent::class)
-class BalanceModule {
+interface BalanceModule {
 
-    @Provides
-    fun etherscanApi(okHttpClient: OkHttpClient, moshi: Moshi) =
-        Retrofit.Builder()
-            .baseUrl("https://api.etherscan.io/")
-            .client(okHttpClient)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .build()
-            .create(EtherscanApi::class.java)
+    @Binds
+    fun getTokenBalance(impl: GetTokenBalanceImpl): GetTokenBalance
 
-    @Provides
-    fun getBalanceStrategy() = GetBalancesStrategy.FivePerSecond
+    companion object {
+        @Provides
+        fun etherscanApi(okHttpClient: OkHttpClient, moshi: Moshi) =
+            Retrofit.Builder()
+                .baseUrl("https://api.etherscan.io/")
+                .client(okHttpClient)
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
+                .build()
+                .create(EtherscanApi::class.java)
+
+        @Provides
+        fun getBalanceStrategy() = GetBalancesStrategy.FivePerSecond
+    }
 }

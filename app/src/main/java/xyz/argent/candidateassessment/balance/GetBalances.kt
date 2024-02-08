@@ -6,7 +6,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import xyz.argent.candidateassessment.app.Constants
 import xyz.argent.candidateassessment.tokens.Token
 
 data class GetBalancesStrategy private constructor(val maxRequests: Int, val perMillis: Long) {
@@ -18,7 +17,7 @@ data class GetBalancesStrategy private constructor(val maxRequests: Int, val per
 
 @Suppress("SuspendFunctionOnCoroutineScope")
 class GetBalances @Inject constructor(
-    private val api: EtherscanApi,
+    private val getTokenBalance: GetTokenBalance,
     private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
 ) {
     suspend operator fun invoke(tokens: List<Token>) =
@@ -36,19 +35,10 @@ class GetBalances @Inject constructor(
         tokens
             .map { getBalance(it) }
             .awaitAll()
-            .map { (token, balanceResponse) ->
-                val balance = balanceResponse.map { it.result.toDouble() }
+            .map { (token, balance) ->
                 Balance(token = token, balance = balance)
             }
 
     private suspend fun CoroutineScope.getBalance(token: Token) =
-        async {
-            token to runCatching {
-                api.getTokenBalance(
-                    token.address,
-                    Constants.walletAddress,
-                    Constants.etherscanApiKey,
-                )
-            }
-        }
+        async { token to getTokenBalance(token) }
 }

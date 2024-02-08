@@ -24,7 +24,7 @@ import kotlin.test.assertEquals
 class BalanceViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testCoroutineScope = CloseableCoroutineScope(testDispatcher)
-    private val getBalances = GetBalances(EtherscanApiMock, GetBalancesStrategy(10, 0))
+    private val getBalances = GetBalances(EtherscanApiMock, GetBalancesStrategy.MaxRequestsNoDelay)
     private val getTokens = GetTokens()
     private fun viewModel() =
         BalanceViewModel(testCoroutineScope, SavedStateHandle(), getBalances, getTokens)

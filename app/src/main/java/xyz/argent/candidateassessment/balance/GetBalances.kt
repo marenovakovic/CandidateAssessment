@@ -9,12 +9,17 @@ import kotlinx.coroutines.delay
 import xyz.argent.candidateassessment.app.Constants
 import xyz.argent.candidateassessment.tokens.Token
 
-data class GetBalancesStrategy(val maxRequests: Int, val perMillis: Long)
+data class GetBalancesStrategy private constructor(val maxRequests: Int, val perMillis: Long) {
+    companion object {
+        val MaxRequestsNoDelay = GetBalancesStrategy(Int.MAX_VALUE, 0)
+        val FivePerSecond = GetBalancesStrategy(5, 1_000)
+    }
+}
 
 @Suppress("SuspendFunctionOnCoroutineScope")
 class GetBalances @Inject constructor(
     private val api: EtherscanApi,
-    private val strategy: GetBalancesStrategy = GetBalancesStrategy(5, 1_000),
+    private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
 ) {
     suspend operator fun invoke(tokens: List<Token>) =
         coroutineScope {

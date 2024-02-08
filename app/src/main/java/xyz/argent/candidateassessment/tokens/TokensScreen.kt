@@ -1,11 +1,18 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package xyz.argent.candidateassessment.tokens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -15,20 +22,36 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import xyz.argent.candidateassessment.R
+import xyz.argent.candidateassessment.balance.BalanceState
+import xyz.argent.candidateassessment.balance.BalanceViewModel
+import xyz.argent.candidateassessment.balance.Balances
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TokensScreen(onBackPressed: () -> Unit) {
+fun TokensScreen(
+    balanceViewModel: BalanceViewModel = hiltViewModel<BalanceViewModel>(),
+    onBackPressed: () -> Unit,
+) {
+    val state by balanceViewModel.state.collectAsState()
+
+    TokensScreen(state, balanceViewModel::search, onBackPressed)
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TokensScreen(
+    state: BalanceState,
+    onQueryChanged: (String) -> Unit,
+    onBackPressed: () -> Unit,
+) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -44,21 +67,33 @@ fun TokensScreen(onBackPressed: () -> Unit) {
             )
         },
     ) {
-        Column(
+        LazyColumn(
+            contentPadding = it,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(it)
-                .padding(12.dp),
+            modifier = Modifier.fillMaxSize()
         ) {
-            var query by remember { mutableStateOf("") }
-
-            OutlinedTextField(
-                label = { Text(text = stringResource(R.string.search_tokens)) },
-                value = query,
-                onValueChange = { query = it },
-                modifier = Modifier.fillMaxWidth()
-            )
+            stickyHeader {
+                OutlinedTextField(
+                    label = { Text(text = stringResource(R.string.search_tokens)) },
+                    value = state.query,
+                    onValueChange = onQueryChanged,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            item { Spacer(modifier = Modifier.height(32.dp)) }
+            if (state.balances is Balances.Success)
+                items(state.balances.balances) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                    ) {
+                        Text(
+                            text = it.token.name.orEmpty(),
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
+                }
         }
     }
 }
@@ -67,6 +102,12 @@ fun TokensScreen(onBackPressed: () -> Unit) {
 @Composable
 private fun TokensScreenPreview() {
     MaterialTheme {
-        TokensScreen {}
+        val state = BalanceState.Initial
+
+        TokensScreen(
+            state = state,
+            onQueryChanged = {},
+            onBackPressed = {},
+        )
     }
 }

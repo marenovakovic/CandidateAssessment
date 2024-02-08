@@ -79,7 +79,7 @@ private fun TokensScreen(
                 value = state.query,
                 onValueChange = onQueryChanged,
                 label = { Text(text = stringResource(R.string.search_tokens)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(32.dp))
             Crossfade(

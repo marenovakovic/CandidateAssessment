@@ -1,5 +1,7 @@
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -14,6 +16,8 @@ import xyz.argent.candidateassessment.balance.EtherscanApiMock
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.balance.GetBalancesStrategy
 import xyz.argent.candidateassessment.tokens.GetTokens
+import xyz.argent.candidateassessment.tokens.Token
+import xyz.argent.candidateassessment.tokens.tokens
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -24,9 +28,16 @@ class BalanceViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testCoroutineScope = CloseableCoroutineScope(testDispatcher)
     private val getBalances = GetBalances(EtherscanApiMock, GetBalancesStrategy.MaxRequestsNoDelay)
-    private val getTokens = GetTokens()
-    private fun viewModel() =
-        BalanceViewModel(testCoroutineScope, SavedStateHandle(), getBalances, getTokens)
+    private val tenTokens = tokens.take(10)
+    private fun viewModel(getTokens: () -> List<Token> = { tenTokens }) =
+        BalanceViewModel(
+            coroutineScope = testCoroutineScope,
+            savedStateHandle = SavedStateHandle(),
+            getBalances = getBalances,
+            getTokens = mockk<GetTokens> {
+                every { this@mockk.invoke() } returns getTokens()
+            },
+        )
 
     @BeforeTest
     fun setup() {
@@ -56,7 +67,7 @@ class BalanceViewModelTest {
 
             assertEquals(BalanceState(query, Balances.Initial), awaitItem())
             assertEquals(BalanceState(query, Balances.Loading), awaitItem())
-            val tokens = getTokens().filter { it.name.orEmpty().contains(query) }
+            val tokens = tenTokens.filter { it.name.orEmpty().contains(query) }
             val expectedBalances = getBalances(tokens)
             assertEquals(BalanceState(query, Balances.Success(expectedBalances)), awaitItem())
         }
@@ -94,13 +105,32 @@ class BalanceViewModelTest {
 
             assertEquals(BalanceState(query, Balances.Initial), awaitItem())
             assertEquals(BalanceState(query, Balances.Loading), awaitItem())
-            val tokens = getTokens().filter { it.name.orEmpty().contains(query) }
+            val tokens = tenTokens.filter { it.name.orEmpty().contains(query) }
             val expectedBalances = getBalances(tokens)
             assertEquals(BalanceState(query, Balances.Success(expectedBalances)), awaitItem())
 
             viewModel.search("")
 
             assertEquals(BalanceState.Initial, awaitItem())
+        }
+    }
+
+    @Test
+    fun `search tokens ignoreCase = true`() = runTest {
+        val token = tenTokens.first().copy(name = "A")
+        val tokens = listOf(token)
+        val query = token.name!!.lowercase()
+
+        val viewModel = viewModel { listOf(token) }
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.search(query)
+            skipItems(2)
+
+            val expectedBalances = getBalances(tokens)
+            assertEquals(BalanceState(query, Balances.Success(expectedBalances)), awaitItem())
         }
     }
 }

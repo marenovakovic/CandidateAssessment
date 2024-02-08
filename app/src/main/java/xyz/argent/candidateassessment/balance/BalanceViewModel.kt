@@ -36,7 +36,7 @@ class BalanceViewModel @Inject constructor(
             .map { query ->
                 if (query.isNotBlank())
                     getTokens()
-                        .filter { it.name.orEmpty().contains(query) }
+                        .filter { it.name.orEmpty().contains(query, ignoreCase = true) }
                 else emptyList()
             }
             .map(getBalances::invoke)

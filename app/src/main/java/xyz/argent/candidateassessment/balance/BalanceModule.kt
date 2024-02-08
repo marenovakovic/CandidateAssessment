@@ -23,5 +23,5 @@ class BalanceModule {
             .create(EtherscanApi::class.java)
 
     @Provides
-    fun getBalanceStrategy() = GetBalancesStrategy(5, 1_000)
+    fun getBalanceStrategy() = GetBalancesStrategy.FivePerSecond
 }

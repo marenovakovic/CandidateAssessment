@@ -21,18 +21,6 @@ import kotlinx.coroutines.flow.update
 import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.tokens.GetTokens
 
-data class BalanceState(val query: String, val balances: Balances) {
-    companion object {
-        val Initial = BalanceState("", Balances.Initial)
-    }
-}
-
-sealed interface Balances {
-    data object Initial : Balances
-    data object Loading : Balances
-    data class Success(val balances: List<Balance>) : Balances
-}
-
 @HiltViewModel
 class BalanceViewModel @Inject constructor(
     coroutineScope: CloseableCoroutineScope,

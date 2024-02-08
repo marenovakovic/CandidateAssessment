@@ -159,13 +159,14 @@ private fun Balances(balances: List<Balance>) {
                     .background(color)
                     .padding(16.dp),
             ) {
-                Column(verticalArrangement = Arrangement.Center) {
+                Column {
                     AsyncImage(
                         model = balance.token.image,
                         contentDescription = null,
                         contentScale = ContentScale.FillBounds,
                         modifier = Modifier.size(32.dp)
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(text = balance.token.name.orEmpty())
                 }
                 balance.balance.fold(

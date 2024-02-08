@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -39,7 +40,7 @@ class BalanceViewModel @Inject constructor(
                         .filter { it.name.orEmpty().contains(query, ignoreCase = true) }
                 else emptyList()
             }
-            .map(getBalances::invoke)
+            .mapLatest(getBalances::invoke)
             .onEach { isLoading.update { false } }
             .map(Balances::Success)
             .onStart<Balances> { emit(Balances.Initial) }

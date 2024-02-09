@@ -37,3 +37,5 @@ class GetBalancesImpl @Inject constructor(
     private suspend fun CoroutineScope.getBalance(token: Token) =
         async { token to getTokenBalance(token) }
 }
+
+// note: I tried Semaphore implementation too but that didn't work out as expected

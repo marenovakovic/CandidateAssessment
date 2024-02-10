@@ -1,7 +1,9 @@
 package xyz.argent.candidateassessment.balance
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,9 +27,46 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import xyz.argent.candidateassessment.ui.Loading
 
 @Composable
-fun BalancesLayout(balances: List<Balance>) {
+fun Balances(
+    balanceState: BalanceState,
+    modifier: Modifier = Modifier,
+) {
+    Crossfade(
+        targetState = balanceState.balances,
+        label = "Balances state crossfade",
+        modifier = modifier,
+    ) { targetState ->
+        Balances(balances = targetState)
+    }
+}
+
+@Composable
+private fun Balances(balances: Balances) {
+    when (balances) {
+        Balances.Initial -> InitialContent()
+        Balances.Loading -> Loading()
+        is Balances.Success -> Balances(balances.balances)
+    }
+}
+
+@Composable
+private fun InitialContent() {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        Text(
+            style = MaterialTheme.typography.bodyMedium,
+            text = "Search tokens in order to see balance",
+        )
+    }
+}
+
+@Composable
+private fun Balances(balances: List<Balance>) {
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -77,6 +116,5 @@ fun BalancesLayout(balances: List<Balance>) {
 @Preview
 @Composable
 private fun BalancesLayoutPreview() {
-    MaterialTheme {
-    }
+    MaterialTheme {}
 }

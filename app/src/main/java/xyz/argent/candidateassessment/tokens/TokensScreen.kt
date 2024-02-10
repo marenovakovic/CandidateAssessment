@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,7 +19,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -34,7 +32,7 @@ import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.balance.BalanceState
 import xyz.argent.candidateassessment.balance.BalanceViewModel
 import xyz.argent.candidateassessment.balance.Balances
-import xyz.argent.candidateassessment.balance.BalancesLayout
+import xyz.argent.candidateassessment.ui.Loading
 
 @Composable
 fun TokensScreen(
@@ -44,20 +42,47 @@ fun TokensScreen(
 ) {
     rememberSaveable { tokensViewModel.init(); 1 }
 
-    val state by balanceViewModel.state.collectAsState()
-
+    val balanceState by balanceViewModel.state.collectAsState()
     val tokensState by tokensViewModel.state.collectAsState()
-    LaunchedEffect(tokensState) {
-        println(tokensState)
-    }
 
-    TokensScreen(state, balanceViewModel::search, onBackPressed)
+    TokensScreen(
+        tokensState = tokensState,
+        balanceState = balanceState,
+        onQueryChanged = balanceViewModel::search,
+        onBackPressed = onBackPressed,
+    )
+}
+
+@Composable
+private fun TokensScreen(
+    tokensState: TokensState,
+    balanceState: BalanceState,
+    onQueryChanged: (String) -> Unit,
+    onBackPressed: () -> Unit,
+) {
+    Crossfade(
+        targetState = tokensState,
+        label = "TokensScreen content Crossfade",
+        modifier = Modifier.fillMaxSize(),
+    ) { targetState ->
+        when (targetState) {
+            TokensState.Initial -> Box {}
+            TokensState.Loading -> Loading()
+            TokensState.Error -> Text(text = "Error")
+            TokensState.ConnectivityError -> Text(text = "ConnectivityError")
+            is TokensState.Tokens -> TokensScreen(
+                balanceState = balanceState,
+                onQueryChanged = onQueryChanged,
+                onBackPressed = onBackPressed,
+            )
+        }
+    }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TokensScreen(
-    state: BalanceState,
+    balanceState: BalanceState,
     onQueryChanged: (String) -> Unit,
     onBackPressed: () -> Unit,
 ) {
@@ -84,47 +109,17 @@ private fun TokensScreen(
                 .padding(8.dp),
         ) {
             OutlinedTextField(
-                value = state.query,
+                value = balanceState.query,
                 onValueChange = onQueryChanged,
                 label = { Text(text = stringResource(R.string.search_tokens)) },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(32.dp))
-            Crossfade(
-                targetState = state.balances,
-                label = "Balances state crossfade",
-            ) { targetState ->
-                when (targetState) {
-                    Balances.Initial -> InitialContent()
-                    Balances.Loading -> Loading()
-                    is Balances.Success -> BalancesLayout(targetState.balances)
-                }
-            }
+            Balances(
+                balanceState = balanceState,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
-
-    }
-}
-
-@Composable
-private fun InitialContent() {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        Text(
-            style = MaterialTheme.typography.bodyMedium,
-            text = "Search tokens in order to see balance",
-        )
-    }
-}
-
-@Composable
-private fun Loading() {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        CircularProgressIndicator()
     }
 }
 
@@ -135,7 +130,7 @@ private fun TokensScreenPreview() {
         val state = BalanceState.Initial
 
         TokensScreen(
-            state = state,
+            balanceState = state,
             onQueryChanged = {},
             onBackPressed = {},
         )

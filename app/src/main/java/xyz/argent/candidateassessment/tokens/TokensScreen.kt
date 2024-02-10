@@ -31,13 +31,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import xyz.argent.candidateassessment.R
-import xyz.argent.candidateassessment.balance.BalanceViewModel
 import xyz.argent.candidateassessment.balance.Balances
 
 @Composable
 fun TokensScreen(
     tokensViewModel: TokensViewModel = hiltViewModel(),
-    balanceViewModel: BalanceViewModel = hiltViewModel(),
     onBackPressed: () -> Unit,
 ) {
     rememberSaveable { tokensViewModel.init(); 1 }
@@ -46,7 +44,7 @@ fun TokensScreen(
 
     TokensScreen(
         tokensState = tokensState,
-        onQueryChanged = balanceViewModel::search,
+        onQueryChanged = tokensViewModel::search,
         onBackPressed = onBackPressed,
     )
 }
@@ -57,15 +55,15 @@ fun TokensScreen(
     onQueryChanged: (String) -> Unit,
     onBackPressed: () -> Unit,
 ) {
-    Box(
-        contentAlignment = Alignment.Center,
+    Crossfade(
+        targetState = tokensState,
+        label = "TokensScreen content Crossfade",
         modifier = Modifier.fillMaxSize(),
-    ) {
-        Crossfade(
-            targetState = tokensState,
-            label = "TokensScreen content Crossfade",
+    ) { targetState ->
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize(),
-        ) { targetState ->
+        ) {
             when (targetState) {
                 TokensState.Initial -> Box {}
                 TokensState.Loading ->
@@ -75,11 +73,12 @@ fun TokensScreen(
                 TokensState.Error -> Text(text = stringResource(R.string.error))
                 TokensState.ConnectivityError ->
                     Text(text = stringResource(R.string.internet_not_available))
-                is TokensState.Tokens -> TokensScreen(
-                    tokensState = targetState,
-                    onQueryChanged = onQueryChanged,
-                    onBackPressed = onBackPressed,
-                )
+                is TokensState.Tokens ->
+                    TokensScreen(
+                        tokensState = targetState,
+                        onQueryChanged = onQueryChanged,
+                        onBackPressed = onBackPressed,
+                    )
             }
         }
     }

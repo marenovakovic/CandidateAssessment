@@ -6,4 +6,6 @@
     <string name="welcome">Welcome</string>
     <string name="tokens">Tokens</string>
     <string name="search_tokens">Search tokens</string>
+    <string name="error">Error</string>
+    <string name="internet_not_available">Internet not available</string>
 </resources>

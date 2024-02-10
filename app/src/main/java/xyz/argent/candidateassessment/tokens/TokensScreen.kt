@@ -68,8 +68,9 @@ private fun TokensScreen(
         when (targetState) {
             TokensState.Initial -> Box {}
             TokensState.Loading -> Loading()
-            TokensState.Error -> Text(text = "Error")
-            TokensState.ConnectivityError -> Text(text = "ConnectivityError")
+            TokensState.Error -> Text(text = stringResource(R.string.error))
+            TokensState.ConnectivityError ->
+                Text(text = stringResource(R.string.internet_not_available))
             is TokensState.Tokens -> TokensScreen(
                 balanceState = balanceState,
                 onQueryChanged = onQueryChanged,

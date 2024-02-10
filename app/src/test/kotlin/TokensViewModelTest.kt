@@ -1,4 +1,8 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -23,6 +27,7 @@ class TokensViewModelTest {
         getTokens: GetTokens = GetTokens { Result.success(tokens) },
     ) =
         TokensViewModel(
+            savedStateHandle = SavedStateHandle(),
             coroutineScope = coroutineScope,
             connectivityObserver = object : ConnectivityObserver {
                 override val status = connectivity
@@ -127,7 +132,6 @@ class TokensViewModelTest {
         }
     }
 
-    @Ignore
     @Test
     fun `search tokens`() = runTest {
         val tokens = tokens
@@ -145,6 +149,7 @@ class TokensViewModelTest {
 
             val expectedTokens = tokens.filter { it.name.orEmpty().contains(query) }
             assertEquals(1, 1)
+            assertEquals(expectedTokens, (awaitItem() as TokensState.Tokens).tokens)
         }
     }
 }

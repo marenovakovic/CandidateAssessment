@@ -1,5 +1,6 @@
 package xyz.argent.candidateassessment.tokens
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -24,17 +25,20 @@ sealed interface TokensState {
 
 @HiltViewModel
 class TokensViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
     private val coroutineScope: CloseableCoroutineScope,
     connectivityObserver: ConnectivityObserver,
     private val getTokens: GetTokens,
 ) : ViewModel(coroutineScope) {
     private val tokens = MutableStateFlow<Result<List<Token>>?>(null)
+    private val query = savedStateHandle.getStateFlow(QUERY, "")
     private val isLoading = MutableStateFlow(false)
     private val tokensState =
-        combine(tokens, isLoading) { tokens, isLoading ->
+        combine(tokens, query, isLoading) { tokens, query, isLoading ->
             when {
                 isLoading -> TokensState.Loading
-                tokens?.isSuccess == true -> TokensState.Tokens(tokens.getOrThrow())
+                tokens?.isSuccess == true -> TokensState.Tokens(
+                    tokens.getOrThrow().filter { it.name.orEmpty().contains(query) })
                 tokens?.isFailure == true -> TokensState.Error
                 else -> TokensState.Initial
             }
@@ -58,5 +62,11 @@ class TokensViewModel @Inject constructor(
 
     fun retry() = init()
 
-    fun search(query: String?) {}
+    fun search(query: String) {
+        savedStateHandle[QUERY] = query
+    }
+
+    companion object {
+        private const val QUERY = "query"
+    }
 }

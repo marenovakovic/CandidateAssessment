@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import xyz.argent.candidateassessment.CloseableCoroutineScope
+import xyz.argent.candidateassessment.balance.BalanceState
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.ConnectivityStatus
 import xyz.argent.candidateassessment.tokens.GetTokens
@@ -97,7 +98,10 @@ class TokensViewModelTest {
             viewModel.init()
 
             assertEquals(TokensState.Loading, awaitItem())
-            assertEquals(TokensState.Tokens("", tokens), awaitItem())
+            assertEquals(
+                TokensState.Tokens("", tokens, BalanceState.Initial),
+                awaitItem(),
+            )
         }
     }
 
@@ -115,7 +119,10 @@ class TokensViewModelTest {
             viewModel.init()
 
             assertEquals(TokensState.Loading, awaitItem())
-            assertEquals(TokensState.Tokens("", tokens), awaitItem())
+            assertEquals(
+                TokensState.Tokens("", tokens, BalanceState.Initial),
+                awaitItem(),
+            )
         }
     }
 
@@ -144,7 +151,10 @@ class TokensViewModelTest {
             viewModel.retry()
 
             assertEquals(TokensState.Loading, awaitItem())
-            assertEquals(TokensState.Tokens("", tokens), awaitItem())
+            assertEquals(
+                TokensState.Tokens("", tokens, BalanceState.Initial),
+                awaitItem(),
+            )
         }
     }
 
@@ -165,7 +175,10 @@ class TokensViewModelTest {
 
             viewModel.search(query)
 
-            assertEquals(TokensState.Tokens(query, queryTokens), awaitItem())
+            assertEquals(
+                TokensState.Tokens(query, queryTokens, BalanceState.Initial),
+                awaitItem(),
+            )
         }
     }
 
@@ -186,7 +199,10 @@ class TokensViewModelTest {
 
             viewModel.search(query)
 
-            assertEquals(TokensState.Tokens(query, listOf(queryToken)), awaitItem())
+            assertEquals(
+                TokensState.Tokens(query, listOf(queryToken), BalanceState.Initial),
+                awaitItem(),
+            )
         }
     }
 }

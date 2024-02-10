@@ -12,13 +12,18 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.CloseableCoroutineScope
+import xyz.argent.candidateassessment.balance.BalanceState
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.flatMapLatest
 
 sealed interface TokensState {
     data object Initial : TokensState
     data object Loading : TokensState
-    data class Tokens(val query: String, val tokens: List<Token>) : TokensState
+    data class Tokens(
+        val query: String,
+        val tokens: List<Token>,
+        val balanceState: BalanceState,
+    ) : TokensState
     data object ConnectivityError : TokensState
     data object Error : TokensState
 }
@@ -33,11 +38,12 @@ class TokensViewModel @Inject constructor(
     private val tokens = MutableStateFlow<Result<List<Token>>?>(null)
     private val query = savedStateHandle.getStateFlow(QUERY, "")
     private val isLoading = MutableStateFlow(false)
+    private val balanceState = MutableStateFlow<BalanceState>(BalanceState.Initial)
     private val tokensState =
-        combine(tokens, query, isLoading) { tokens, query, isLoading ->
+        combine(query, tokens, balanceState, isLoading) { query, tokens, balanceState, isLoading ->
             when {
                 isLoading -> TokensState.Loading
-                tokens?.isSuccess == true -> TokensState.Tokens(query, tokens.search(query))
+                tokens?.isSuccess == true -> TokensState.Tokens(query, tokens.search(query), balanceState)
                 tokens?.isFailure == true -> TokensState.Error
                 else -> TokensState.Initial
             }

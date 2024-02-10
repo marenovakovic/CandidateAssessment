@@ -11,12 +11,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -61,7 +61,7 @@ class TokensViewModel @Inject constructor(
                     is TokensState.Tokens ->
                         TokensState.Tokens(
                             query = query,
-                            tokens = if (query.isBlank()) it.tokens else it.tokens.search(query),
+                            tokens = it.tokens.search(query),
                             balances = Balances.Initial,
                         )
                     else -> it

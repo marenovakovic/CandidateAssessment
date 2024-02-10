@@ -1,18 +1,31 @@
+@file:Suppress("FunctionName")
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package xyz.argent.candidateassessment.tokens
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.balance.Balances
+import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.flatMapLatest
 
@@ -35,16 +48,58 @@ class TokensViewModel @Inject constructor(
     private val coroutineScope: CloseableCoroutineScope,
     connectivityObserver: ConnectivityObserver,
     private val getTokens: GetTokens,
+    private val getBalances: GetBalances,
 ) : ViewModel(coroutineScope) {
 
-    private val balances = MutableStateFlow<Balances>(Balances.Initial)
-    private val tokensState = MutableStateFlow<TokensState>(TokensState.Initial)
-    private val _state = combine(tokensState, balances) { tokensState, balances ->
-        when (tokensState) {
-            is TokensState.Tokens -> tokensState.copy(balances = balances)
-            else -> tokensState
+    private val query = savedStateHandle.getStateFlow(QUERY, "")
+    private val tokens = MutableStateFlow<TokensState>(TokensState.Initial)
+
+    private val tokensState =
+        query.flatMapLatest { query ->
+            tokens.map {
+                when (it) {
+                    is TokensState.Tokens ->
+                        it.copy(
+                            query = query,
+                            tokens = if (query.isBlank()) it.tokens else it.tokens.search(query),
+                            balances = Balances.Initial,
+                        )
+                    else -> it
+                }
+            }
         }
-    }
+
+    private val loadingBalances = MutableStateFlow(false)
+    private val balances =
+        tokensState
+            .filterIsInstance<TokensState.Tokens>()
+            .filter { it.query.isNotBlank() }
+            .mapLatest { it.tokens }
+            .distinctUntilChanged()
+            .onEach { loadingBalances.update { true } }
+            .mapLatest { tokens ->
+                val balances = getBalances(tokens)
+                Balances.Success(balances)
+            }
+            .onEach { loadingBalances.update { false } }
+            .onStart<Balances> { emit(Balances.Initial) }
+
+    private val _state =
+        combine(tokensState, balances, loadingBalances) { tokensState, balances, loadingBalances ->
+            when (tokensState) {
+                is TokensState.Tokens -> {
+                    tokensState.copy(
+                        balances =
+                        when {
+                            loadingBalances -> Balances.Loading
+                            balances is Balances.Success -> balances
+                            else -> tokensState.balances
+                        },
+                    )
+                }
+                else -> tokensState
+            }
+        }
 
     val state =
         connectivityObserver
@@ -56,9 +111,9 @@ class TokensViewModel @Inject constructor(
             .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
 
     fun init() {
-        tokensState.update { TokensState.Loading }
+        tokens.update { TokensState.Loading }
         coroutineScope.launch {
-            tokensState.update { loadTokens() }
+            tokens.update { loadTokens() }
         }
     }
 
@@ -72,16 +127,7 @@ class TokensViewModel @Inject constructor(
     fun retry() = init()
 
     fun search(query: String) {
-        tokensState.update { currentState ->
-            when (currentState) {
-                is TokensState.Tokens ->
-                    currentState.copy(
-                        query = query,
-                        tokens = currentState.tokens.search(query),
-                    )
-                else -> currentState
-            }
-        }
+        savedStateHandle[QUERY] = query
     }
 
     private fun List<Token>.search(query: String) =

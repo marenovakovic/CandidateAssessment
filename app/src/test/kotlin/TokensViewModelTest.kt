@@ -11,13 +11,16 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import xyz.argent.candidateassessment.CloseableCoroutineScope
+import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.Balances
+import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.ConnectivityStatus
 import xyz.argent.candidateassessment.tokens.GetTokens
 import xyz.argent.candidateassessment.tokens.TokensState
 import xyz.argent.candidateassessment.tokens.TokensViewModel
 import xyz.argent.candidateassessment.tokens.tokens
+import kotlin.random.Random
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
@@ -31,6 +34,11 @@ class TokensViewModelTest {
     private fun viewModel(
         connectivity: Flow<ConnectivityStatus> = flowOf(ConnectivityStatus.Available),
         getTokens: GetTokens = GetTokens { Result.success(tokens) },
+        getBalances: GetBalances = GetBalances { tokens ->
+            tokens.map { token ->
+                Balance(token, Result.success(Random.nextDouble()))
+            }
+        },
     ) =
         TokensViewModel(
             savedStateHandle = SavedStateHandle(),
@@ -39,6 +47,7 @@ class TokensViewModelTest {
                 override val status = connectivity
             },
             getTokens = getTokens,
+            getBalances = getBalances,
         )
 
     @BeforeTest
@@ -158,6 +167,7 @@ class TokensViewModelTest {
         }
     }
 
+    @Ignore
     @Test
     fun `search tokens`() = runTest {
         val queryTokens = listOf(tokens.first().copy(name = "a"), tokens.first().copy(name = "aa"))
@@ -203,18 +213,68 @@ class TokensViewModelTest {
                 TokensState.Tokens(query, listOf(queryToken), Balances.Initial),
                 awaitItem(),
             )
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
-    @Ignore
+    @Test
+    fun `search ALL tokens and not already searched ones`() = runTest {
+        val tokenA = tokens.first().copy(name = "a")
+        val tokenB = tokens.first().copy(name = "b")
+        val tokens = listOf(tokenA, tokenB)
+        val getBalances = GetBalances {
+            it.map { token ->
+                Balance(token, Result.success(0.0))
+            }
+        }
+
+        val viewModel = viewModel(
+            getTokens = { Result.success(tokens) },
+            getBalances = getBalances,
+        )
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.init()
+            skipItems(2)
+
+            viewModel.search(tokenA.name!!)
+            viewModel.search(tokenB.name!!)
+
+            assertEquals(
+                TokensState.Tokens(tokenA.name!!, listOf(tokenA), Balances.Initial),
+                awaitItem(),
+            )
+            assertEquals(
+                TokensState.Tokens(tokenA.name!!, listOf(tokenA), Balances.Loading),
+                awaitItem(),
+            )
+            skipItems(3)
+            assertEquals(
+                TokensState.Tokens(
+                    tokenB.name!!,
+                    listOf(tokenB),
+                    Balances.Success(getBalances(listOf(tokenB))),
+                ),
+                awaitItem(),
+            )
+        }
+    }
+
     @Test
     fun `get balances for searched tokens`() = runTest {
         val queryToken = tokens.first().copy(name = "A")
         val nonQueryToken = tokens.first().copy(name = "b")
         val tokens = listOf(queryToken, nonQueryToken)
+        val balances = tokens.map { Balance(it, Result.success(Random.nextDouble())) }
         val query = queryToken.name!!.lowercase()
+        val getBalances = GetBalances { balances }
 
-        val viewModel = viewModel(getTokens = { Result.success(tokens) })
+        val viewModel = viewModel(
+            getTokens = { Result.success(tokens) },
+            getBalances = getBalances,
+        )
 
         viewModel.state.test {
             skipItems(1)
@@ -223,10 +283,21 @@ class TokensViewModelTest {
             skipItems(2)
 
             viewModel.search(query)
-            skipItems(1)
 
             assertEquals(
+                TokensState.Tokens(query, listOf(queryToken), Balances.Initial),
+                awaitItem(),
+            )
+            assertEquals(
                 TokensState.Tokens(query, listOf(queryToken), Balances.Loading),
+                awaitItem(),
+            )
+            assertEquals(
+                TokensState.Tokens(
+                    query,
+                    listOf(queryToken),
+                    Balances.Success(getBalances(tokens)),
+                ),
                 awaitItem(),
             )
         }

@@ -36,6 +36,35 @@ class TokensViewModelTest {
     }
 
     @Test
+    fun `error getting tokens`() = runTest {
+        val viewModel = viewModel(getTokens = { Result.failure(Throwable()) })
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.init()
+
+            assertEquals(TokensState.Loading, awaitItem())
+            assertEquals(TokensState.Error, awaitItem())
+        }
+    }
+
+    @Test
+    fun `connectivity not available`() = runTest {
+        val connectivity = flowOf(ConnectivityStatus.Unavailable)
+
+        val viewModel = viewModel(connectivity = connectivity)
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.init()
+
+            assertEquals(TokensState.ConnectivityError, awaitItem())
+        }
+    }
+
+    @Test
     fun `get tokens when init is called`() = runTest {
         val tokens = tokens
 
@@ -52,8 +81,12 @@ class TokensViewModelTest {
     }
 
     @Test
-    fun `error getting tokens`() = runTest {
-        val viewModel = viewModel(getTokens = { Result.failure(Throwable()) })
+    fun `get tokens when init is called and connection is available`() = runTest {
+        val connectivity = flowOf(ConnectivityStatus.Unavailable, ConnectivityStatus.Available)
+        val tokens = tokens
+
+        val viewModel =
+            viewModel(connectivity = connectivity, getTokens = { Result.success(tokens) })
 
         viewModel.state.test {
             skipItems(1)
@@ -61,7 +94,7 @@ class TokensViewModelTest {
             viewModel.init()
 
             assertEquals(TokensState.Loading, awaitItem())
-            assertEquals(TokensState.Error, awaitItem())
+            assertEquals(TokensState.Tokens(tokens), awaitItem())
         }
     }
 
@@ -91,21 +124,6 @@ class TokensViewModelTest {
 
             assertEquals(TokensState.Loading, awaitItem())
             assertEquals(TokensState.Tokens(tokens), awaitItem())
-        }
-    }
-
-    @Test
-    fun `connectivity not available`() = runTest {
-        val connectivity = flowOf(ConnectivityStatus.Unavailable)
-
-        val viewModel = viewModel(connectivity = connectivity)
-
-        viewModel.state.test {
-            skipItems(1)
-
-            viewModel.init()
-
-            assertEquals(TokensState.ConnectivityError, awaitItem())
         }
     }
 

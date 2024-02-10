@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.CloseableCoroutineScope
-import xyz.argent.candidateassessment.balance.BalanceState
+import xyz.argent.candidateassessment.balance.Balances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.flatMapLatest
 
@@ -22,7 +22,7 @@ sealed interface TokensState {
     data class Tokens(
         val query: String,
         val tokens: List<Token>,
-        val balanceState: BalanceState,
+        val balances: Balances,
     ) : TokensState
 
     data object ConnectivityError : TokensState
@@ -39,7 +39,7 @@ class TokensViewModel @Inject constructor(
     private val tokens = MutableStateFlow<Result<List<Token>>?>(null)
     private val query = savedStateHandle.getStateFlow(QUERY, "")
     private val loadingTokens = MutableStateFlow(false)
-    private val balanceState = MutableStateFlow<BalanceState>(BalanceState.Initial)
+    private val balanceState = MutableStateFlow<Balances>(Balances.Initial)
     private val tokensState =
         combine(
             query,

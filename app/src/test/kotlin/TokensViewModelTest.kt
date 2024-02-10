@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.balance.BalanceState
+import xyz.argent.candidateassessment.balance.Balances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.ConnectivityStatus
 import xyz.argent.candidateassessment.tokens.GetTokens
@@ -99,7 +100,7 @@ class TokensViewModelTest {
 
             assertEquals(TokensState.Loading, awaitItem())
             assertEquals(
-                TokensState.Tokens("", tokens, BalanceState.Initial),
+                TokensState.Tokens("", tokens, Balances.Initial),
                 awaitItem(),
             )
         }
@@ -120,7 +121,7 @@ class TokensViewModelTest {
 
             assertEquals(TokensState.Loading, awaitItem())
             assertEquals(
-                TokensState.Tokens("", tokens, BalanceState.Initial),
+                TokensState.Tokens("", tokens, Balances.Initial),
                 awaitItem(),
             )
         }
@@ -152,7 +153,7 @@ class TokensViewModelTest {
 
             assertEquals(TokensState.Loading, awaitItem())
             assertEquals(
-                TokensState.Tokens("", tokens, BalanceState.Initial),
+                TokensState.Tokens("", tokens, Balances.Initial),
                 awaitItem(),
             )
         }
@@ -176,7 +177,7 @@ class TokensViewModelTest {
             viewModel.search(query)
 
             assertEquals(
-                TokensState.Tokens(query, queryTokens, BalanceState.Initial),
+                TokensState.Tokens(query, queryTokens, Balances.Initial),
                 awaitItem(),
             )
         }
@@ -200,7 +201,7 @@ class TokensViewModelTest {
             viewModel.search(query)
 
             assertEquals(
-                TokensState.Tokens(query, listOf(queryToken), BalanceState.Initial),
+                TokensState.Tokens(query, listOf(queryToken), Balances.Initial),
                 awaitItem(),
             )
         }

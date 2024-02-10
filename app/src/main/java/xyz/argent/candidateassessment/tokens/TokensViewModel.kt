@@ -24,6 +24,7 @@ sealed interface TokensState {
         val tokens: List<Token>,
         val balanceState: BalanceState,
     ) : TokensState
+
     data object ConnectivityError : TokensState
     data object Error : TokensState
 }
@@ -37,13 +38,19 @@ class TokensViewModel @Inject constructor(
 ) : ViewModel(coroutineScope) {
     private val tokens = MutableStateFlow<Result<List<Token>>?>(null)
     private val query = savedStateHandle.getStateFlow(QUERY, "")
-    private val isLoading = MutableStateFlow(false)
+    private val loadingTokens = MutableStateFlow(false)
     private val balanceState = MutableStateFlow<BalanceState>(BalanceState.Initial)
     private val tokensState =
-        combine(query, tokens, balanceState, isLoading) { query, tokens, balanceState, isLoading ->
+        combine(
+            query,
+            tokens,
+            balanceState,
+            loadingTokens,
+        ) { query, tokens, balanceState, loadingTokens ->
             when {
-                isLoading -> TokensState.Loading
-                tokens?.isSuccess == true -> TokensState.Tokens(query, tokens.search(query), balanceState)
+                loadingTokens -> TokensState.Loading
+                tokens?.isSuccess == true ->
+                    TokensState.Tokens(query, tokens.search(query), balanceState)
                 tokens?.isFailure == true -> TokensState.Error
                 else -> TokensState.Initial
             }
@@ -62,10 +69,10 @@ class TokensViewModel @Inject constructor(
             .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
 
     fun init() {
-        isLoading.update { true }
+        loadingTokens.update { true }
         coroutineScope.launch {
             tokens.update { getTokens() }
-            isLoading.update { false }
+            loadingTokens.update { false }
         }
     }
 

@@ -9,7 +9,7 @@ class GetTokensImpl @Inject constructor(private val api: EthExplorerApi) : GetTo
         runCatching {
             api
                 .getTopTokens()
-                .tokens
+                .tokens.take(3)
                 .map(EthExplorerApi.TokenResponse::toToken)
         }
 }

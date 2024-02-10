@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package xyz.argent.candidateassessment.tokens
 
 import androidx.compose.animation.Crossfade
@@ -55,42 +57,6 @@ fun TokensScreen(
     onQueryChanged: (String) -> Unit,
     onBackPressed: () -> Unit,
 ) {
-    Crossfade(
-        targetState = tokensState,
-        label = "TokensScreen content Crossfade",
-        modifier = Modifier.fillMaxSize(),
-    ) { targetState ->
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            when (targetState) {
-                TokensState.Initial -> Box {}
-                TokensState.Loading ->
-                    CircularProgressIndicator(
-                        modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_LOADING),
-                    )
-                TokensState.Error -> Text(text = stringResource(R.string.error))
-                TokensState.ConnectivityError ->
-                    Text(text = stringResource(R.string.internet_not_available))
-                is TokensState.Tokens ->
-                    TokensScreen(
-                        tokensState = targetState,
-                        onQueryChanged = onQueryChanged,
-                        onBackPressed = onBackPressed,
-                    )
-            }
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun TokensScreen(
-    tokensState: TokensState.Tokens,
-    onQueryChanged: (String) -> Unit,
-    onBackPressed: () -> Unit,
-) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -114,16 +80,39 @@ private fun TokensScreen(
                 .padding(8.dp),
         ) {
             OutlinedTextField(
-                value = tokensState.query,
+                value = (tokensState as? TokensState.Tokens)?.query.orEmpty(),
                 onValueChange = onQueryChanged,
+                enabled = tokensState is TokensState.Tokens,
                 label = { Text(text = stringResource(R.string.search_tokens)) },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(32.dp))
-            Balances(
-                balances = tokensState.balances,
+            Crossfade(
+                targetState = tokensState,
+                label = "TokensScreen content Crossfade",
                 modifier = Modifier.fillMaxSize(),
-            )
+            ) { targetState ->
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    when (targetState) {
+                        TokensState.Initial -> Box {}
+                        TokensState.Loading ->
+                            CircularProgressIndicator(
+                                modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_LOADING),
+                            )
+                        TokensState.Error -> Text(text = stringResource(R.string.error))
+                        TokensState.ConnectivityError ->
+                            Text(text = stringResource(R.string.internet_not_available))
+                        is TokensState.Tokens ->
+                            Balances(
+                                balances = targetState.balances,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                    }
+                }
+            }
         }
     }
 }

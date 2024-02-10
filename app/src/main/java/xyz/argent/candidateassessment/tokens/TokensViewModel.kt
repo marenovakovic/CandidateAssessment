@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -36,7 +37,15 @@ class TokensViewModel @Inject constructor(
     private val getTokens: GetTokens,
 ) : ViewModel(coroutineScope) {
 
-    private val _state = MutableStateFlow<TokensState>(TokensState.Initial)
+    private val balances = MutableStateFlow<Balances>(Balances.Initial)
+    private val tokensState = MutableStateFlow<TokensState>(TokensState.Initial)
+    private val _state = combine(tokensState, balances) { tokensState, balances ->
+        when (tokensState) {
+            is TokensState.Tokens -> tokensState.copy(balances = balances)
+            else -> tokensState
+        }
+    }
+
     val state =
         connectivityObserver
             .status
@@ -47,9 +56,9 @@ class TokensViewModel @Inject constructor(
             .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
 
     fun init() {
-        _state.update { TokensState.Loading }
+        tokensState.update { TokensState.Loading }
         coroutineScope.launch {
-            _state.update { loadTokens() }
+            tokensState.update { loadTokens() }
         }
     }
 
@@ -63,7 +72,7 @@ class TokensViewModel @Inject constructor(
     fun retry() = init()
 
     fun search(query: String) {
-        _state.update { currentState ->
+        tokensState.update { currentState ->
             when (currentState) {
                 is TokensState.Tokens ->
                     currentState.copy(

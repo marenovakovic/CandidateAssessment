@@ -97,7 +97,7 @@ class TokensViewModelTest {
             viewModel.init()
 
             assertEquals(TokensState.Loading, awaitItem())
-            assertEquals(TokensState.Tokens(tokens), awaitItem())
+            assertEquals(TokensState.Tokens("", tokens), awaitItem())
         }
     }
 
@@ -115,7 +115,7 @@ class TokensViewModelTest {
             viewModel.init()
 
             assertEquals(TokensState.Loading, awaitItem())
-            assertEquals(TokensState.Tokens(tokens), awaitItem())
+            assertEquals(TokensState.Tokens("", tokens), awaitItem())
         }
     }
 
@@ -144,7 +144,7 @@ class TokensViewModelTest {
             viewModel.retry()
 
             assertEquals(TokensState.Loading, awaitItem())
-            assertEquals(TokensState.Tokens(tokens), awaitItem())
+            assertEquals(TokensState.Tokens("", tokens), awaitItem())
         }
     }
 
@@ -165,7 +165,7 @@ class TokensViewModelTest {
 
             viewModel.search(query)
 
-            assertEquals(TokensState.Tokens(queryTokens), awaitItem())
+            assertEquals(TokensState.Tokens(query, queryTokens), awaitItem())
         }
     }
 
@@ -186,7 +186,7 @@ class TokensViewModelTest {
 
             viewModel.search(query)
 
-            assertEquals(TokensState.Tokens(listOf(queryToken)), awaitItem())
+            assertEquals(TokensState.Tokens(query, listOf(queryToken)), awaitItem())
         }
     }
 }

@@ -18,7 +18,7 @@ import xyz.argent.candidateassessment.connectivity.flatMapLatest
 sealed interface TokensState {
     data object Initial : TokensState
     data object Loading : TokensState
-    data class Tokens(val tokens: List<Token>) : TokensState
+    data class Tokens(val query: String, val tokens: List<Token>) : TokensState
     data object ConnectivityError : TokensState
     data object Error : TokensState
 }
@@ -37,7 +37,7 @@ class TokensViewModel @Inject constructor(
         combine(tokens, query, isLoading) { tokens, query, isLoading ->
             when {
                 isLoading -> TokensState.Loading
-                tokens?.isSuccess == true -> TokensState.Tokens(tokens.search(query))
+                tokens?.isSuccess == true -> TokensState.Tokens(query, tokens.search(query))
                 tokens?.isFailure == true -> TokensState.Error
                 else -> TokensState.Initial
             }

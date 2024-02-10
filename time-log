@@ -13,4 +13,4 @@ initial GetTokens implementation that actually calls the API - 1 pomodoro
 refactoring - 1 pomodoro
 refactoring + improvements - 1 pomodoro
 TokensViewModel and ConnectivityObserver - 2 pomodori
-UI refactoring - less than 1 pomodoro
+UI refactoring - 1 pomodoro

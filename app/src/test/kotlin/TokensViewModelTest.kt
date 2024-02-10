@@ -11,7 +11,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import xyz.argent.candidateassessment.CloseableCoroutineScope
-import xyz.argent.candidateassessment.balance.BalanceState
 import xyz.argent.candidateassessment.balance.Balances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.ConnectivityStatus
@@ -206,4 +205,5 @@ class TokensViewModelTest {
             )
         }
     }
+
 }

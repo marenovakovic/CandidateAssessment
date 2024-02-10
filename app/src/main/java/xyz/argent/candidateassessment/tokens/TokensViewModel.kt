@@ -39,18 +39,13 @@ class TokensViewModel @Inject constructor(
     private val tokens = MutableStateFlow<Result<List<Token>>?>(null)
     private val query = savedStateHandle.getStateFlow(QUERY, "")
     private val loadingTokens = MutableStateFlow(false)
-    private val balanceState = MutableStateFlow<Balances>(Balances.Initial)
+    private val balances = MutableStateFlow<Balances>(Balances.Initial)
     private val tokensState =
-        combine(
-            query,
-            tokens,
-            balanceState,
-            loadingTokens,
-        ) { query, tokens, balanceState, loadingTokens ->
+        combine(query, tokens, balances, loadingTokens) { query, tokens, balances, loadingTokens ->
             when {
                 loadingTokens -> TokensState.Loading
                 tokens?.isSuccess == true ->
-                    TokensState.Tokens(query, tokens.search(query), balanceState)
+                    TokensState.Tokens(query, tokens.search(query), balances)
                 tokens?.isFailure == true -> TokensState.Error
                 else -> TokensState.Initial
             }

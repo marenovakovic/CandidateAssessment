@@ -26,7 +26,7 @@ class GetBalancesImpl @Inject constructor(
                 }
         }
 
-    private suspend fun CoroutineScope.getBalancesRec(
+    private tailrec suspend fun CoroutineScope.getBalancesRec(
         chunks: List<List<Token>>,
         acc: List<Balance>,
     ): List<Balance> =

@@ -31,11 +31,11 @@ import coil.compose.AsyncImage
 
 @Composable
 fun Balances(
-    balanceState: BalanceState,
+    balances: Balances,
     modifier: Modifier = Modifier,
 ) {
     Crossfade(
-        targetState = balanceState.balances,
+        targetState = balances,
         label = "Balances state crossfade",
         modifier = modifier,
     ) { targetState ->

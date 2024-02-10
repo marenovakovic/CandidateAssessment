@@ -31,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import xyz.argent.candidateassessment.R
-import xyz.argent.candidateassessment.balance.BalanceState
 import xyz.argent.candidateassessment.balance.BalanceViewModel
 import xyz.argent.candidateassessment.balance.Balances
 
@@ -43,12 +42,10 @@ fun TokensScreen(
 ) {
     rememberSaveable { tokensViewModel.init(); 1 }
 
-    val balanceState by balanceViewModel.state.collectAsState()
     val tokensState by tokensViewModel.state.collectAsState()
 
     TokensScreen(
         tokensState = tokensState,
-        balanceState = balanceState,
         onQueryChanged = balanceViewModel::search,
         onBackPressed = onBackPressed,
     )
@@ -57,7 +54,6 @@ fun TokensScreen(
 @Composable
 fun TokensScreen(
     tokensState: TokensState,
-    balanceState: BalanceState,
     onQueryChanged: (String) -> Unit,
     onBackPressed: () -> Unit,
 ) {
@@ -80,7 +76,7 @@ fun TokensScreen(
                 TokensState.ConnectivityError ->
                     Text(text = stringResource(R.string.internet_not_available))
                 is TokensState.Tokens -> TokensScreen(
-                    balanceState = balanceState,
+                    tokensState = targetState,
                     onQueryChanged = onQueryChanged,
                     onBackPressed = onBackPressed,
                 )
@@ -92,7 +88,7 @@ fun TokensScreen(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TokensScreen(
-    balanceState: BalanceState,
+    tokensState: TokensState.Tokens,
     onQueryChanged: (String) -> Unit,
     onBackPressed: () -> Unit,
 ) {
@@ -119,14 +115,14 @@ private fun TokensScreen(
                 .padding(8.dp),
         ) {
             OutlinedTextField(
-                value = balanceState.query,
+                value = tokensState.query,
                 onValueChange = onQueryChanged,
                 label = { Text(text = stringResource(R.string.search_tokens)) },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(32.dp))
             Balances(
-                balanceState = balanceState,
+                balances = tokensState.balances,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -137,10 +133,10 @@ private fun TokensScreen(
 @Composable
 private fun TokensScreenPreview() {
     MaterialTheme {
-        val state = BalanceState.Initial
+        val state = TokensState.Tokens("", tokens.take(3), Balances.Initial)
 
         TokensScreen(
-            balanceState = state,
+            tokensState = state,
             onQueryChanged = {},
             onBackPressed = {},
         )

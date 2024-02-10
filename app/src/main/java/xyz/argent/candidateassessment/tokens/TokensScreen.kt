@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,7 +55,7 @@ fun TokensScreen(
 }
 
 @Composable
-private fun TokensScreen(
+fun TokensScreen(
     tokensState: TokensState,
     balanceState: BalanceState,
     onQueryChanged: (String) -> Unit,
@@ -67,7 +68,8 @@ private fun TokensScreen(
     ) { targetState ->
         when (targetState) {
             TokensState.Initial -> Box {}
-            TokensState.Loading -> Loading()
+            TokensState.Loading ->
+                Loading(modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_LOADING))
             TokensState.Error -> Text(text = stringResource(R.string.error))
             TokensState.ConnectivityError ->
                 Text(text = stringResource(R.string.internet_not_available))
@@ -137,3 +139,5 @@ private fun TokensScreenPreview() {
         )
     }
 }
+
+const val TEST_TAG_TOKENS_SCREEN_LOADING = "test_tag_tokens_screen_loading"

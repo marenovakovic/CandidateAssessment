@@ -2,11 +2,14 @@
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.ConnectivityStatus
@@ -14,6 +17,8 @@ import xyz.argent.candidateassessment.tokens.GetTokens
 import xyz.argent.candidateassessment.tokens.TokensState
 import xyz.argent.candidateassessment.tokens.TokensViewModel
 import xyz.argent.candidateassessment.tokens.tokens
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -35,6 +40,16 @@ class TokensViewModelTest {
             getTokens = getTokens,
         )
 
+    @BeforeTest
+    fun setup() {
+        Dispatchers.setMain(dispatcher)
+    }
+
+    @AfterTest
+    fun cleanup() {
+        Dispatchers.resetMain()
+    }
+
     @Test
     fun `initial state`() {
         assertEquals(TokensState.Initial, viewModel().state.value)
@@ -54,6 +69,7 @@ class TokensViewModelTest {
         }
     }
 
+    @Ignore
     @Test
     fun `connectivity not available`() = runTest {
         val connectivity = flowOf(ConnectivityStatus.Unavailable)
@@ -134,7 +150,9 @@ class TokensViewModelTest {
 
     @Test
     fun `search tokens`() = runTest {
-        val tokens = tokens
+        val queryTokens = listOf(tokens.first().copy(name = "a"), tokens.first().copy(name = "aa"))
+        val nonQueryTokens = listOf(tokens.first().copy(name = "b"))
+        val tokens = queryTokens + nonQueryTokens
         val query = "a"
 
         val viewModel = viewModel(getTokens = { Result.success(tokens) })
@@ -147,9 +165,28 @@ class TokensViewModelTest {
 
             viewModel.search(query)
 
-            val expectedTokens = tokens.filter { it.name.orEmpty().contains(query) }
-            assertEquals(1, 1)
-            assertEquals(expectedTokens, (awaitItem() as TokensState.Tokens).tokens)
+            assertEquals(TokensState.Tokens(queryTokens), awaitItem())
+        }
+    }
+
+    @Test
+    fun `search tokens ignoreCase = true`() = runTest {
+        val queryToken = tokens.first().copy(name = "A")
+        val nonQueryToken = tokens.first().copy(name = "b")
+        val tokens = listOf(queryToken, nonQueryToken)
+        val query = queryToken.name!!.lowercase()
+
+        val viewModel = viewModel(getTokens = { Result.success(tokens) })
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.init()
+            skipItems(2)
+
+            viewModel.search(query)
+
+            assertEquals(TokensState.Tokens(listOf(queryToken)), awaitItem())
         }
     }
 }

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -38,7 +39,7 @@ class TokensViewModel @Inject constructor(
             when {
                 isLoading -> TokensState.Loading
                 tokens?.isSuccess == true -> TokensState.Tokens(
-                    tokens.getOrThrow().filter { it.name.orEmpty().contains(query) })
+                    tokens.getOrThrow().filter { it.name.orEmpty().contains(query, ignoreCase = true) })
                 tokens?.isFailure == true -> TokensState.Error
                 else -> TokensState.Initial
             }

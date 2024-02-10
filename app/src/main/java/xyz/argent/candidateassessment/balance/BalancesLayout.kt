@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +28,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import xyz.argent.candidateassessment.ui.Loading
 
 @Composable
 fun Balances(
@@ -39,30 +39,25 @@ fun Balances(
         label = "Balances state crossfade",
         modifier = modifier,
     ) { targetState ->
-        Balances(balances = targetState)
-    }
-}
-
-@Composable
-private fun Balances(balances: Balances) {
-    when (balances) {
-        Balances.Initial -> InitialContent()
-        Balances.Loading -> Loading()
-        is Balances.Success -> Balances(balances.balances)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            when (targetState) {
+                Balances.Initial -> InitialContent()
+                Balances.Loading -> CircularProgressIndicator()
+                is Balances.Success -> Balances(targetState.balances)
+            }
+        }
     }
 }
 
 @Composable
 private fun InitialContent() {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        Text(
-            style = MaterialTheme.typography.bodyMedium,
-            text = "Search tokens in order to see balance",
-        )
-    }
+    Text(
+        style = MaterialTheme.typography.bodyMedium,
+        text = "Search tokens in order to see balance",
+    )
 }
 
 @Composable

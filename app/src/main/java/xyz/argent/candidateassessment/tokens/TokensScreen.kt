@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +34,6 @@ import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.balance.BalanceState
 import xyz.argent.candidateassessment.balance.BalanceViewModel
 import xyz.argent.candidateassessment.balance.Balances
-import xyz.argent.candidateassessment.ui.Loading
 
 @Composable
 fun TokensScreen(
@@ -61,23 +61,30 @@ fun TokensScreen(
     onQueryChanged: (String) -> Unit,
     onBackPressed: () -> Unit,
 ) {
-    Crossfade(
-        targetState = tokensState,
-        label = "TokensScreen content Crossfade",
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize(),
-    ) { targetState ->
-        when (targetState) {
-            TokensState.Initial -> Box {}
-            TokensState.Loading ->
-                Loading(modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_LOADING))
-            TokensState.Error -> Text(text = stringResource(R.string.error))
-            TokensState.ConnectivityError ->
-                Text(text = stringResource(R.string.internet_not_available))
-            is TokensState.Tokens -> TokensScreen(
-                balanceState = balanceState,
-                onQueryChanged = onQueryChanged,
-                onBackPressed = onBackPressed,
-            )
+    ) {
+        Crossfade(
+            targetState = tokensState,
+            label = "TokensScreen content Crossfade",
+            modifier = Modifier.fillMaxSize(),
+        ) { targetState ->
+            when (targetState) {
+                TokensState.Initial -> Box {}
+                TokensState.Loading ->
+                    CircularProgressIndicator(
+                        modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_LOADING),
+                    )
+                TokensState.Error -> Text(text = stringResource(R.string.error))
+                TokensState.ConnectivityError ->
+                    Text(text = stringResource(R.string.internet_not_available))
+                is TokensState.Tokens -> TokensScreen(
+                    balanceState = balanceState,
+                    onQueryChanged = onQueryChanged,
+                    onBackPressed = onBackPressed,
+                )
+            }
         }
     }
 }

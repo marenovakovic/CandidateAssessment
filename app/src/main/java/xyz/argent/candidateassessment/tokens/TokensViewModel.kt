@@ -56,10 +56,10 @@ class TokensViewModel @Inject constructor(
 
     private val tokensState =
         query.flatMapLatest { query ->
-            tokens.map {
+            tokens.mapLatest {
                 when (it) {
                     is TokensState.Tokens ->
-                        it.copy(
+                        TokensState.Tokens(
                             query = query,
                             tokens = if (query.isBlank()) it.tokens else it.tokens.search(query),
                             balances = Balances.Initial,

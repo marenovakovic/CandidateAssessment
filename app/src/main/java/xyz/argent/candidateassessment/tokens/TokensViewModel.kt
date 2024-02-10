@@ -6,7 +6,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -36,46 +35,48 @@ class TokensViewModel @Inject constructor(
     connectivityObserver: ConnectivityObserver,
     private val getTokens: GetTokens,
 ) : ViewModel(coroutineScope) {
-    private val tokens = MutableStateFlow<Result<List<Token>>?>(null)
-    private val query = savedStateHandle.getStateFlow(QUERY, "")
-    private val loadingTokens = MutableStateFlow(false)
-    private val balances = MutableStateFlow<Balances>(Balances.Initial)
-    private val tokensState =
-        combine(query, tokens, balances, loadingTokens) { query, tokens, balances, loadingTokens ->
-            when {
-                loadingTokens -> TokensState.Loading
-                tokens?.isSuccess == true ->
-                    TokensState.Tokens(query, tokens.search(query), balances)
-                tokens?.isFailure == true -> TokensState.Error
-                else -> TokensState.Initial
-            }
-        }
 
-    private fun Result<List<Token>>.search(query: String) =
-        getOrThrow().filter { it.name.orEmpty().contains(query, ignoreCase = true) }
-
+    private val _state = MutableStateFlow<TokensState>(TokensState.Initial)
     val state =
         connectivityObserver
             .status
             .flatMapLatest(
                 onUnavailable = { flowOf(TokensState.ConnectivityError) },
-                onAvailable = { tokensState }
+                onAvailable = { _state },
             )
             .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
 
     fun init() {
-        loadingTokens.update { true }
+        _state.update { TokensState.Loading }
         coroutineScope.launch {
-            tokens.update { getTokens() }
-            loadingTokens.update { false }
+            _state.update { loadTokens() }
         }
     }
+
+    private suspend fun TokensViewModel.loadTokens() =
+        getTokens()
+            .fold(
+                onFailure = { TokensState.Error },
+                onSuccess = { TokensState.Tokens("", it, Balances.Initial) },
+            )
 
     fun retry() = init()
 
     fun search(query: String) {
-        savedStateHandle[QUERY] = query
+        _state.update { currentState ->
+            when (currentState) {
+                is TokensState.Tokens ->
+                    currentState.copy(
+                        query = query,
+                        tokens = currentState.tokens.search(query),
+                    )
+                else -> currentState
+            }
+        }
     }
+
+    private fun List<Token>.search(query: String) =
+        filter { it.name.orEmpty().contains(query, ignoreCase = true) }
 
     companion object {
         private const val QUERY = "query"

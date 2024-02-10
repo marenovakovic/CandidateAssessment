@@ -206,4 +206,29 @@ class TokensViewModelTest {
         }
     }
 
+    @Ignore
+    @Test
+    fun `get balances for searched tokens`() = runTest {
+        val queryToken = tokens.first().copy(name = "A")
+        val nonQueryToken = tokens.first().copy(name = "b")
+        val tokens = listOf(queryToken, nonQueryToken)
+        val query = queryToken.name!!.lowercase()
+
+        val viewModel = viewModel(getTokens = { Result.success(tokens) })
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.init()
+            skipItems(2)
+
+            viewModel.search(query)
+            skipItems(1)
+
+            assertEquals(
+                TokensState.Tokens(query, listOf(queryToken), Balances.Loading),
+                awaitItem(),
+            )
+        }
+    }
 }

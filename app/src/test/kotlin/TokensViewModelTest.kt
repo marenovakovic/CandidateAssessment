@@ -99,7 +99,7 @@ class TokensViewModelTest {
     }
 
     @Test
-    fun retry() = runTest {
+    fun `retry on Error`() = runTest {
         var shouldFail = true
         val tokens = tokens
 

@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -38,12 +37,15 @@ class TokensViewModel @Inject constructor(
         combine(tokens, query, isLoading) { tokens, query, isLoading ->
             when {
                 isLoading -> TokensState.Loading
-                tokens?.isSuccess == true -> TokensState.Tokens(
-                    tokens.getOrThrow().filter { it.name.orEmpty().contains(query, ignoreCase = true) })
+                tokens?.isSuccess == true -> TokensState.Tokens(tokens.search(query))
                 tokens?.isFailure == true -> TokensState.Error
                 else -> TokensState.Initial
             }
         }
+
+    private fun Result<List<Token>>.search(query: String) =
+        getOrThrow().filter { it.name.orEmpty().contains(query, ignoreCase = true) }
+
     val state =
         connectivityObserver
             .status

@@ -18,7 +18,6 @@ class GetBalancesImpl @Inject constructor(
     override suspend operator fun invoke(tokens: List<Token>) =
         coroutineScope {
             val chunks = tokens.chunked(strategy.maxRequests)
-            getBalancesRec(chunks)
             chunks
                 .foldIndexed(emptyList<Balance>()) { i, acc, tokens ->
                     val balances = getBalances(tokens)

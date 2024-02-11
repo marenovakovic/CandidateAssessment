@@ -18,27 +18,22 @@ class GetBalancesImpl @Inject constructor(
     override suspend operator fun invoke(tokens: List<Token>) =
         coroutineScope {
             val chunks = tokens.chunked(strategy.maxRequests)
-            chunks
-                .foldIndexed(emptyList<Balance>()) { i, acc, tokens ->
-                    val balances = getBalances(tokens)
-                    if (i != chunks.size - 1) delay(strategy.perMillis)
-                    acc + balances
-                }
+            getBalancesRec(chunks)
         }
 
-    private tailrec suspend fun CoroutineScope.getBalancesRec(
-        chunks: List<List<Token>>,
-        acc: List<Balance>,
-    ): List<Balance> =
-        when {
-            chunks.isEmpty() -> acc
-            chunks.singleOrNull() != null -> acc + getBalances(chunks.single())
-            else -> {
-                val balances = getBalances(chunks.last())
-                delay(1_000)
-                getBalancesRec(chunks.dropLast(1), acc + balances)
+    private suspend fun CoroutineScope.getBalancesRec(chunks: List<List<Token>>): List<Balance> {
+        tailrec suspend fun rec(chunks: List<List<Token>>, acc: List<Balance>): List<Balance> =
+            when {
+                chunks.isEmpty() -> acc
+                chunks.singleOrNull() != null -> acc + getBalances(chunks.single())
+                else -> {
+                    val balances = getBalances(chunks.last())
+                    delay(1_000)
+                    rec(chunks.dropLast(1), acc + balances)
+                }
             }
-        }
+        return rec(chunks, emptyList())
+    }
 
     private suspend fun CoroutineScope.getBalances(tokens: List<Token>) =
         tokens

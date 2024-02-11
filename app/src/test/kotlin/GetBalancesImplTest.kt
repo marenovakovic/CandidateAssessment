@@ -1,6 +1,7 @@
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.balance.GetBalancesImpl
 import xyz.argent.candidateassessment.balance.GetTokenBalance
 import xyz.argent.candidateassessment.tokens.tokens
@@ -18,7 +19,7 @@ class GetBalancesImplTest {
 
     private fun getBalances(
         getTokenBalance: GetTokenBalance = GetTokenBalance { Result.success(Random.nextDouble()) },
-    ) = GetBalancesImpl(getTokenBalance)
+    ): GetBalances = GetBalancesImpl(getTokenBalance)
 
     @Test
     fun `for empty token list return empty balance list`() = runTest {
@@ -120,4 +121,20 @@ class GetBalancesImplTest {
             assertEquals(3, duration.inWholeSeconds)
         }
     }
+
+    @Test
+    fun `calling invoke multiple times doesn't do more requests than specified in strategy`() =
+        runTest {
+            val tokens = tenTokens
+            val getBalances = getBalances()
+
+            launch {
+                val duration = testScheduler.timeSource.measureTime {
+                    getBalances(tokens)
+                    getBalances(tokens)
+                }
+
+                assertEquals(3, duration.inWholeSeconds)
+            }
+        }
 }

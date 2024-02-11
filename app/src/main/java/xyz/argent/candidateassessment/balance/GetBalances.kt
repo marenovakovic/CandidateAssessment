@@ -19,6 +19,12 @@ class GetBalancesImpl @Inject constructor(
         coroutineScope {
             val chunks = tokens.chunked(strategy.maxRequests)
             getBalancesRec(chunks)
+            chunks
+                .foldIndexed(emptyList<Balance>()) { i, acc, tokens ->
+                    val balances = getBalances(tokens)
+                    if (i != chunks.size - 1) delay(strategy.perMillis)
+                    acc + balances
+                }
         }
 
     private suspend fun CoroutineScope.getBalancesRec(chunks: List<List<Token>>): List<Balance> {

@@ -20,3 +20,4 @@ improvements + debugging - 2 pomodori
 experimenting with new rate limiting, revert to old one and fixing old one - 3 pomodori
 fixing losing time between invocations - 1 pomodoro
 process death - 1 pomodoro
+cleanup + retry on error - 1 pomodoro

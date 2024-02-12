@@ -29,7 +29,6 @@ class GetBalancesImpl @Inject constructor(
     override suspend operator fun invoke(tokens: List<Token>) =
         coroutineScope {
             delay(initialDelay)
-            previousInvokeEnd = TimeSource.Monotonic.markNow()
             getBalancesWithRateLimit(tokens)
         }
 
@@ -37,6 +36,7 @@ class GetBalancesImpl @Inject constructor(
         val chunks = tokens.chunked(strategy.maxRequests)
         return chunks
             .foldIndexed(emptyList()) { i, acc, chunk ->
+                previousInvokeEnd = TimeSource.Monotonic.markNow()
                 val balances = getBalances(chunk)
                 if (i != chunks.size - 1) delay(strategy.perMillis)
                 acc + balances

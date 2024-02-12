@@ -117,7 +117,7 @@ class TokensViewModel @Inject constructor(
         }
     }
 
-    private suspend fun TokensViewModel.loadTokens() =
+    private suspend fun loadTokens() =
         getTokens()
             .fold(
                 onFailure = { TokensState.Error },

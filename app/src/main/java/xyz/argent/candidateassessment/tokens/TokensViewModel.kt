@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -76,10 +77,8 @@ class TokensViewModel @Inject constructor(
             .mapLatest { it.tokens }
             .distinctUntilChanged()
             .onEach { loadingBalances.update { true } }
-            .mapLatest { tokens ->
-                val balances = getBalances(tokens)
-                Balances.Success(balances)
-            }
+            .mapLatest(getBalances)
+            .map(Balances::Success)
             .onEach { loadingBalances.update { false } }
             .onStart<Balances> { emit(Balances.Initial) }
 

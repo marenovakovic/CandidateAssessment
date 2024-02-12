@@ -70,12 +70,14 @@ class TokensViewModel @Inject constructor(
         }
 
     private val loadingBalances = MutableStateFlow(false)
-    private val balances =
+    private val searchedTokens =
         tokensState
             .filterIsInstance<TokensState.Tokens>()
             .filter { it.query.isNotBlank() }
             .mapLatest { it.tokens }
             .distinctUntilChanged()
+    private val balances =
+        searchedTokens
             .onEach { loadingBalances.update { true } }
             .mapLatest(getBalances)
             .map(Balances::Success)

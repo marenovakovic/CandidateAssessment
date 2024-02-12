@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -55,17 +54,15 @@ class TokensViewModel @Inject constructor(
     private val tokens = MutableStateFlow<TokensState>(TokensState.Initial)
 
     private val tokensState =
-        query.flatMapLatest { query ->
-            tokens.mapLatest {
-                when (it) {
-                    is TokensState.Tokens ->
-                        TokensState.Tokens(
-                            query = query,
-                            tokens = it.tokens.search(query),
-                            balances = Balances.Initial,
-                        )
-                    else -> it
-                }
+        combine(query, tokens) { query, tokensState ->
+            when (tokensState) {
+                is TokensState.Tokens ->
+                    TokensState.Tokens(
+                        query = query,
+                        tokens = tokensState.tokens.search(query),
+                        balances = Balances.Initial,
+                    )
+                else -> tokensState
             }
         }
 

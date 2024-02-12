@@ -7,6 +7,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import xyz.argent.candidateassessment.tokens.Token
+import kotlin.time.TimeSource
 
 fun interface GetBalances : suspend (List<Token>) -> List<Balance>
 
@@ -16,16 +17,30 @@ class GetBalancesImpl @Inject constructor(
     private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
 ) : GetBalances {
 
+    private var previousInvokeEnd: TimeSource.Monotonic.ValueTimeMark? = null
+
+    private val initialDelay: Long
+        get() = when {
+            previousInvokeEnd == null -> 0
+            previousInvokeEnd!!.elapsedNow().inWholeMilliseconds > strategy.perMillis -> 0
+            else -> strategy.perMillis
+        }
+
     override suspend operator fun invoke(tokens: List<Token>) =
         coroutineScope {
-            val chunks = tokens.chunked(strategy.maxRequests)
-            chunks
-                .foldIndexed(emptyList<Balance>()) { i, acc, tokens ->
-                    val balances = getBalances(tokens)
-                    if (i != chunks.size - 1) delay(strategy.perMillis)
-                    acc + balances
-                }
+            delay(initialDelay)
+            previousInvokeEnd = TimeSource.Monotonic.markNow()
+            getBalancesWithRateLimit(tokens)
         }
+
+    private suspend fun CoroutineScope.getBalancesWithRateLimit(tokens: List<Token>) =
+        tokens
+            .chunked(strategy.maxRequests)
+            .foldIndexed(emptyList<Balance>()) { i, acc, chunk ->
+                val balances = getBalances(chunk)
+                if (i != tokens.chunked(strategy.maxRequests).size - 1) delay(strategy.perMillis)
+                acc + balances
+            }
 
     private suspend fun CoroutineScope.getBalances(tokens: List<Token>) =
         tokens

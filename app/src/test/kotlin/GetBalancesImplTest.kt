@@ -129,8 +129,9 @@ class GetBalancesImplTest {
 
     @Test
     fun `strategy rules still apply across invocations`() = runTest {
-        val tokens = tenTokens.take(5)
-        val getBalances = getBalances()
+        val tokens = tenTokens
+        val strategy = GetBalancesStrategy.FivePerSecond
+        val getBalances = getBalances(strategy = strategy)
 
         launch {
             val duration = testScheduler.timeSource.measureTime {
@@ -138,7 +139,11 @@ class GetBalancesImplTest {
                 getBalances(tokens)
             }
 
-            assertEquals(2, duration.inWholeSeconds)
+            val delayBetweenInvocations = strategy.perMillis
+            assertEquals(
+                strategy.perMillis * 2 + delayBetweenInvocations,
+                duration.inWholeMilliseconds,
+            )
         }
     }
 }

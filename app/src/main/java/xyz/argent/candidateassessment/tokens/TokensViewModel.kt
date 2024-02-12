@@ -82,7 +82,11 @@ class TokensViewModel @Inject constructor(
             .onStart<BalancesState> { emit(BalancesState.Initial) }
 
     private val _state =
-        combine(tokensState, balancesState, loadingBalances) { tokensState, balances, loadingBalances ->
+        combine(
+            tokensState,
+            balancesState,
+            loadingBalances,
+        ) { tokensState, balances, loadingBalances ->
             when (tokensState) {
                 is TokensState.Tokens -> {
                     tokensState.copy(

@@ -9,10 +9,9 @@ import kotlinx.coroutines.delay
 import xyz.argent.candidateassessment.tokens.Token
 import kotlin.time.TimeSource
 
-fun interface GetBalances : suspend (List<Token>) -> List<Balance>
 
 @Suppress("SuspendFunctionOnCoroutineScope")
-class GetBalancesImpl @Inject constructor(
+class GetBalancesRec @Inject constructor(
     private val getTokenBalance: GetTokenBalance,
     private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
 ) : GetBalances {
@@ -23,24 +22,31 @@ class GetBalancesImpl @Inject constructor(
         get() = when {
             lastRequestBatchTime == null -> 0
             lastRequestBatchTime!!.elapsedNow().inWholeMilliseconds > strategy.perMillis -> 0
-            else -> strategy.perMillis
+            else -> strategy.perMillis - lastRequestBatchTime!!.elapsedNow().inWholeMilliseconds
         }
 
     override suspend operator fun invoke(tokens: List<Token>) = coroutineScope {
         delay(initialDelay)
-        lastRequestBatchTime = TimeSource.Monotonic.markNow()
         getBalancesWithRateLimit(tokens)
     }
 
     private suspend fun CoroutineScope.getBalancesWithRateLimit(tokens: List<Token>): List<Balance> {
         val chunks = tokens.chunked(strategy.maxRequests)
-        return chunks
-            .foldIndexed(emptyList()) { i, acc, chunk ->
-                val balances = getBalances(chunk)
-                lastRequestBatchTime = TimeSource.Monotonic.markNow()
-                if (i != chunks.size - 1) delay(strategy.perMillis)
-                acc + balances
+        return getBalancesRec(chunks)
+    }
+
+    private suspend fun CoroutineScope.getBalancesRec(chunks: List<List<Token>>): List<Balance> {
+        tailrec suspend fun loop(chunks: List<List<Token>>, acc: List<Balance>): List<Balance> =
+            when {
+                chunks.isEmpty() -> acc
+                chunks.singleOrNull() != null -> acc + getBalances(chunks.single())
+                else -> {
+                    val balances = getBalances(chunks.last())
+                    delay(strategy.perMillis)
+                    loop(chunks.dropLast(1), acc + balances)
+                }
             }
+        return loop(chunks, emptyList())
     }
 
     private suspend fun CoroutineScope.getBalances(tokens: List<Token>) =

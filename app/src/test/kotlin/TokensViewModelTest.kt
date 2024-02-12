@@ -32,6 +32,7 @@ class TokensViewModelTest {
     private val coroutineScope = CloseableCoroutineScope(dispatcher)
 
     private fun viewModel(
+        savedStateHandle: SavedStateHandle = SavedStateHandle(),
         connectivity: Flow<ConnectivityStatus> = flowOf(ConnectivityStatus.Available),
         getTokens: GetTokens = GetTokens { Result.success(tokens) },
         getBalances: GetBalances = GetBalances { tokens ->
@@ -41,7 +42,7 @@ class TokensViewModelTest {
         },
     ) =
         TokensViewModel(
-            savedStateHandle = SavedStateHandle(),
+            savedStateHandle = savedStateHandle,
             coroutineScope = coroutineScope,
             connectivityObserver = object : ConnectivityObserver {
                 override val status = connectivity
@@ -312,6 +313,41 @@ class TokensViewModelTest {
                     listOf(queryToken),
                     Balances.Success(getBalances(tokens)),
                 ),
+                awaitItem(),
+            )
+        }
+    }
+
+    @Test
+    fun `get balances after process death when tokens are fetched`() = runTest {
+        val queryTokens = listOf(tokens.first().copy(name = "a"), tokens.first().copy(name = "aa"))
+        val nonQueryTokens = listOf(tokens.first().copy(name = "b"))
+        val tokens = queryTokens + nonQueryTokens
+        val query = "a"
+
+        val getBalances = GetBalances {
+            it.map { Balance(it, Result.success(0.0)) }
+        }
+        val savedStateHandle = SavedStateHandle(mapOf(TokensViewModel.QUERY to query))
+        val viewModel = viewModel(
+            savedStateHandle = savedStateHandle,
+            getTokens = { Result.success(tokens) },
+            getBalances = getBalances,
+        )
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.init()
+            skipItems(2)
+
+            assertEquals(
+                TokensState.Tokens(query, queryTokens, Balances.Loading),
+                awaitItem(),
+            )
+            val expectedBalances = getBalances(queryTokens)
+            assertEquals(
+                TokensState.Tokens(query, queryTokens, Balances.Success(expectedBalances)),
                 awaitItem(),
             )
         }

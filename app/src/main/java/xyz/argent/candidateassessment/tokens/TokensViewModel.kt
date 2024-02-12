@@ -51,7 +51,7 @@ class TokensViewModel @Inject constructor(
     getBalances: GetBalances,
 ) : ViewModel(coroutineScope) {
 
-    private val query = MutableStateFlow("")
+    private val query = savedStateHandle.getStateFlow(QUERY, "")
     private val tokens = MutableStateFlow<TokensState>(TokensState.Initial)
 
     private val tokensState =
@@ -127,9 +127,13 @@ class TokensViewModel @Inject constructor(
     fun retry() = init()
 
     fun search(query: String) {
-        this.query.update { query }
+        savedStateHandle[QUERY] = query
     }
 
     private fun List<Token>.search(query: String) =
         filter { it.name.orEmpty().contains(query, ignoreCase = true) }
+
+    companion object {
+        const val QUERY = "query"
+    }
 }

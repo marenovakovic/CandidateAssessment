@@ -7,7 +7,6 @@ import xyz.argent.candidateassessment.balance.GetBalancesStrategy
 import xyz.argent.candidateassessment.balance.GetTokenBalance
 import xyz.argent.candidateassessment.tokens.tokens
 import kotlin.random.Random
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -128,18 +127,18 @@ class GetBalancesImplTest {
         }
     }
 
-    @Ignore
     @Test
     fun `strategy rules still apply across invocations`() = runTest {
+        val tokens = tenTokens.take(5)
         val getBalances = getBalances()
 
         launch {
             val duration = testScheduler.timeSource.measureTime {
-                getBalances(tenTokens)
-                getBalances(tenTokens)
+                getBalances(tokens)
+                getBalances(tokens)
             }
 
-            assertEquals(3, duration.inWholeSeconds)
+            assertEquals(2, duration.inWholeSeconds)
         }
     }
 }

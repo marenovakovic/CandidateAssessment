@@ -27,20 +27,6 @@ class GetBalancesImpl @Inject constructor(
                 }
         }
 
-    private suspend fun CoroutineScope.getBalancesRec(chunks: List<List<Token>>): List<Balance> {
-        tailrec suspend fun loop(chunks: List<List<Token>>, acc: List<Balance>): List<Balance> =
-            when {
-                chunks.isEmpty() -> acc
-                chunks.singleOrNull() != null -> acc + getBalances(chunks.single())
-                else -> {
-                    val balances = getBalances(chunks.last())
-                    delay(strategy.perMillis)
-                    loop(chunks.dropLast(1), acc + balances)
-                }
-            }
-        return loop(chunks, emptyList())
-    }
-
     private suspend fun CoroutineScope.getBalances(tokens: List<Token>) =
         tokens
             .map { getBalance(it) }

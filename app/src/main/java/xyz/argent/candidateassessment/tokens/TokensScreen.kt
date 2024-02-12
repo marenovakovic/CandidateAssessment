@@ -43,7 +43,7 @@ fun TokensScreen(
     tokensViewModel: TokensViewModel = hiltViewModel(),
     onBackPressed: () -> Unit,
 ) {
-    rememberSaveable { tokensViewModel.init(); 1 }
+    remember { tokensViewModel.init(); 1 }
 
     val tokensState by tokensViewModel.state.collectAsState()
 

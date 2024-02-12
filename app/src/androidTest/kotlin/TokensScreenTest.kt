@@ -1,5 +1,6 @@
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -28,13 +29,7 @@ class TokensScreenTest {
         val tokensState = TokensState.Initial
 
         composeTestRule.setContent {
-            MaterialTheme {
-                TokensScreen(
-                    tokensState = tokensState,
-                    onQueryChanged = {},
-                    onBackPressed = {},
-                )
-            }
+            Content(tokensState = tokensState)
         }
 
         composeTestRule
@@ -50,22 +45,16 @@ class TokensScreenTest {
         val tokensState = TokensState.Loading
 
         composeTestRule.setContent {
-            MaterialTheme {
-                TokensScreen(
-                    tokensState = tokensState,
-                    onQueryChanged = {},
-                    onBackPressed = {},
-                )
-            }
+            Content(tokensState = tokensState)
         }
 
-        composeTestRule
-            .onNodeWithTag(TEST_TAG_TOKENS_SCREEN_LOADING)
-            .assertIsDisplayed()
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
             .assertIsDisplayed()
             .assertIsNotEnabled()
+        composeTestRule
+            .onNodeWithTag(TEST_TAG_TOKENS_SCREEN_LOADING)
+            .assertIsDisplayed()
     }
 
     @Test
@@ -73,22 +62,19 @@ class TokensScreenTest {
         val tokensState = TokensState.Error
 
         composeTestRule.setContent {
-            MaterialTheme {
-                TokensScreen(
-                    tokensState = tokensState,
-                    onQueryChanged = {},
-                    onBackPressed = {},
-                )
-            }
+            Content(tokensState = tokensState)
         }
 
-        composeTestRule
-            .onNodeWithText(composeTestRule.activity.getString(R.string.error))
-            .assertIsDisplayed()
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
             .assertIsDisplayed()
             .assertIsNotEnabled()
+        composeTestRule
+            .onNodeWithText(composeTestRule.activity.getString(R.string.error_occurred))
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(composeTestRule.activity.getString(R.string.retry))
+            .assertIsDisplayed()
     }
 
     @Test
@@ -96,23 +82,16 @@ class TokensScreenTest {
         val tokensState = TokensState.ConnectivityError
 
         composeTestRule.setContent {
-            MaterialTheme {
-                TokensScreen(
-                    tokensState = tokensState,
-                    onQueryChanged = {},
-                    onBackPressed = {},
-                )
-            }
+            Content(tokensState = tokensState)
         }
 
-        composeTestRule
-            .onNodeWithText(composeTestRule.activity.getString(R.string.internet_not_available))
-            .assertIsDisplayed()
-        Thread.sleep(1_000)
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
             .assertIsDisplayed()
             .assertIsNotEnabled()
+        composeTestRule
+            .onNodeWithText(composeTestRule.activity.getString(R.string.internet_not_available))
+            .assertIsDisplayed()
     }
 
     @Test
@@ -120,13 +99,7 @@ class TokensScreenTest {
         val tokensState = TokensState.Tokens("", emptyList(), Balances.Initial)
 
         composeTestRule.setContent {
-            MaterialTheme {
-                TokensScreen(
-                    tokensState = tokensState,
-                    onQueryChanged = {},
-                    onBackPressed = {},
-                )
-            }
+            Content(tokensState = tokensState)
         }
 
         composeTestRule
@@ -143,13 +116,7 @@ class TokensScreenTest {
         val tokensState = TokensState.Tokens("", emptyList(), Balances.Loading)
 
         composeTestRule.setContent {
-            MaterialTheme {
-                TokensScreen(
-                    tokensState = tokensState,
-                    onQueryChanged = {},
-                    onBackPressed = {},
-                )
-            }
+            Content(tokensState = tokensState)
         }
 
         composeTestRule
@@ -168,13 +135,7 @@ class TokensScreenTest {
             TokensState.Tokens("", emptyList(), Balances.Success(listOf(balance)))
 
         composeTestRule.setContent {
-            MaterialTheme {
-                TokensScreen(
-                    tokensState = tokensState,
-                    onQueryChanged = {},
-                    onBackPressed = {},
-                )
-            }
+            Content(tokensState = tokensState)
         }
 
         composeTestRule
@@ -187,5 +148,17 @@ class TokensScreenTest {
         composeTestRule
             .onNodeWithText(balance.balance.getOrThrow().toString())
             .assertIsDisplayed()
+    }
+
+    @Composable
+    fun Content(tokensState: TokensState) {
+        MaterialTheme {
+            TokensScreen(
+                tokensState = tokensState,
+                onQueryChanged = {},
+                onRetry = {},
+                onBackPressed = {},
+            )
+        }
     }
 }

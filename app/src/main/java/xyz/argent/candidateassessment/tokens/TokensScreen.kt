@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -50,6 +50,7 @@ fun TokensScreen(
     TokensScreen(
         tokensState = tokensState,
         onQueryChanged = tokensViewModel::search,
+        onRetry = tokensViewModel::retry,
         onBackPressed = onBackPressed,
     )
 }
@@ -58,6 +59,7 @@ fun TokensScreen(
 fun TokensScreen(
     tokensState: TokensState,
     onQueryChanged: (String) -> Unit,
+    onRetry: () -> Unit,
     onBackPressed: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -115,7 +117,7 @@ fun TokensScreen(
                             CircularProgressIndicator(
                                 modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_LOADING),
                             )
-                        TokensState.Error -> Text(text = stringResource(R.string.error))
+                        TokensState.Error -> Error(retry = onRetry)
                         TokensState.ConnectivityError ->
                             Text(text = stringResource(R.string.internet_not_available))
                         is TokensState.Tokens ->
@@ -130,6 +132,17 @@ fun TokensScreen(
     }
 }
 
+@Composable
+private fun Error(retry: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = stringResource(id = R.string.error_occurred))
+        Spacer(modifier = Modifier.height(24.dp))
+        ElevatedButton(onClick = retry) {
+            Text(text = stringResource(id = R.string.retry))
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun TokensScreenPreview() {
@@ -138,6 +151,7 @@ private fun TokensScreenPreview() {
 
         TokensScreen(
             tokensState = state,
+            onRetry = {},
             onQueryChanged = {},
             onBackPressed = {},
         )

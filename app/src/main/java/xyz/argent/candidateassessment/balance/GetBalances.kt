@@ -33,14 +33,15 @@ class GetBalancesImpl @Inject constructor(
             getBalancesWithRateLimit(tokens)
         }
 
-    private suspend fun CoroutineScope.getBalancesWithRateLimit(tokens: List<Token>) =
-        tokens
-            .chunked(strategy.maxRequests)
-            .foldIndexed(emptyList<Balance>()) { i, acc, chunk ->
+    private suspend fun CoroutineScope.getBalancesWithRateLimit(tokens: List<Token>): List<Balance> {
+        val chunks = tokens.chunked(strategy.maxRequests)
+        return chunks
+            .foldIndexed(emptyList()) { i, acc, chunk ->
                 val balances = getBalances(chunk)
-                if (i != tokens.chunked(strategy.maxRequests).size - 1) delay(strategy.perMillis)
+                if (i != chunks.size - 1) delay(strategy.perMillis)
                 acc + balances
             }
+    }
 
     private suspend fun CoroutineScope.getBalances(tokens: List<Token>) =
         tokens

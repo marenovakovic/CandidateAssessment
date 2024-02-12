@@ -167,7 +167,6 @@ class TokensViewModelTest {
         }
     }
 
-    @Ignore
     @Test
     fun `search tokens`() = runTest {
         val queryTokens = listOf(tokens.first().copy(name = "a"), tokens.first().copy(name = "aa"))
@@ -175,7 +174,13 @@ class TokensViewModelTest {
         val tokens = queryTokens + nonQueryTokens
         val query = "a"
 
-        val viewModel = viewModel(getTokens = { Result.success(tokens) })
+        val getBalances = GetBalances { tokens ->
+            tokens.map { Balance(it, Result.success(0.0)) }
+        }
+        val viewModel = viewModel(
+            getTokens = { Result.success(tokens) },
+            getBalances = getBalances,
+        )
 
         viewModel.state.test {
             skipItems(1)
@@ -187,6 +192,15 @@ class TokensViewModelTest {
 
             assertEquals(
                 TokensState.Tokens(query, queryTokens, Balances.Initial),
+                awaitItem(),
+            )
+            assertEquals(
+                TokensState.Tokens(query, queryTokens, Balances.Loading),
+                awaitItem(),
+            )
+            val expectedBalances = getBalances(queryTokens)
+            assertEquals(
+                TokensState.Tokens(query, queryTokens, Balances.Success(expectedBalances)),
                 awaitItem(),
             )
         }

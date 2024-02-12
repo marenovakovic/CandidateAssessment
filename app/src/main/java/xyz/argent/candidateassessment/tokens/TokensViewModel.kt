@@ -48,7 +48,7 @@ class TokensViewModel @Inject constructor(
     private val coroutineScope: CloseableCoroutineScope,
     connectivityObserver: ConnectivityObserver,
     private val getTokens: GetTokens,
-    private val getBalances: GetBalances,
+    getBalances: GetBalances,
 ) : ViewModel(coroutineScope) {
 
     private val query = savedStateHandle.getStateFlow(QUERY, "")

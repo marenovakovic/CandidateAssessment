@@ -17,13 +17,13 @@ class GetBalancesImpl @Inject constructor(
     private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
 ) : GetBalances {
 
-    private var previousInvokeEnd: TimeSource.Monotonic.ValueTimeMark? = null
+    private var lastRequestBatchTime: TimeSource.Monotonic.ValueTimeMark? = null
 
     private val initialDelay: Long
         get() = when {
-            previousInvokeEnd == null -> 0
-            previousInvokeEnd!!.elapsedNow().inWholeMilliseconds > strategy.perMillis -> 0
-            else -> strategy.perMillis - previousInvokeEnd!!.elapsedNow().inWholeMilliseconds
+            lastRequestBatchTime == null -> 0
+            lastRequestBatchTime!!.elapsedNow().inWholeMilliseconds > strategy.perMillis -> 0
+            else -> strategy.perMillis - lastRequestBatchTime!!.elapsedNow().inWholeMilliseconds
         }
 
     override suspend operator fun invoke(tokens: List<Token>) =
@@ -36,7 +36,7 @@ class GetBalancesImpl @Inject constructor(
         val chunks = tokens.chunked(strategy.maxRequests)
         return chunks
             .foldIndexed(emptyList()) { i, acc, chunk ->
-                previousInvokeEnd = TimeSource.Monotonic.markNow()
+                lastRequestBatchTime = TimeSource.Monotonic.markNow()
                 val balances = getBalances(chunk)
                 if (i != chunks.size - 1) delay(strategy.perMillis)
                 acc + balances

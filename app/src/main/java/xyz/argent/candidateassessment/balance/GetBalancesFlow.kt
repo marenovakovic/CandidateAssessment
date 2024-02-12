@@ -4,18 +4,22 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.TickerMode
+import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import xyz.argent.candidateassessment.tokens.Token
 import kotlin.time.TimeSource
 
-fun interface GetBalances : suspend (List<Token>) -> Flow<List<Balance>>
-
 @Suppress("SuspendFunctionOnCoroutineScope")
-class GetBalancesImpl @Inject constructor(
+class GetBalancesFlow @Inject constructor(
     private val getTokenBalance: GetTokenBalance,
     private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
 ) : GetBalances {
@@ -29,21 +33,37 @@ class GetBalancesImpl @Inject constructor(
             else -> strategy.perMillis
         }
 
+    private suspend fun a(tokens: List<Token>) = coroutineScope {
+        val ticker = ticker(
+            delayMillis = strategy.perMillis,
+            initialDelayMillis = initialDelay,
+            mode = TickerMode.FIXED_DELAY,
+        )
+
+        val a =
+            flowOf(tokens.chunked(5))
+                .flatMapConcat { chunks ->
+                    ticker
+                        .receiveAsFlow()
+                        .flatMapConcat { chunks.asFlow() }
+                }
+    }
+
     override suspend operator fun invoke(tokens: List<Token>) = coroutineScope {
         delay(initialDelay)
         lastRequestBatchTime = TimeSource.Monotonic.markNow()
-        flowOf(getBalancesWithRateLimit(tokens))
-    }
-
-    private suspend fun CoroutineScope.getBalancesWithRateLimit(tokens: List<Token>): List<Balance> {
-        val chunks = tokens.chunked(strategy.maxRequests)
-        return chunks
-            .foldIndexed(emptyList()) { i, acc, chunk ->
-                val balances = getBalances(chunk)
-                lastRequestBatchTime = TimeSource.Monotonic.markNow()
-                if (i != chunks.size - 1) delay(strategy.perMillis)
-                acc + balances
-            }
+        flow {
+            val chunks = tokens.chunked(strategy.maxRequests)
+            chunks
+                .foldIndexed<List<Token>, List<Balance>>(emptyList()) { i, acc, chunk ->
+                    val balances = getBalances(chunk)
+                    lastRequestBatchTime = TimeSource.Monotonic.markNow()
+                    if (i != chunks.size - 1) delay(strategy.perMillis)
+                    println("emit")
+                    emit(acc + balances)
+                    acc + balances
+                }
+        }
     }
 
     private suspend fun CoroutineScope.getBalances(tokens: List<Token>) =

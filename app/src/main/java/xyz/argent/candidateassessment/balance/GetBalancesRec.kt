@@ -6,6 +6,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
 import xyz.argent.candidateassessment.tokens.Token
 import kotlin.time.TimeSource
 
@@ -27,7 +28,7 @@ class GetBalancesRec @Inject constructor(
 
     override suspend operator fun invoke(tokens: List<Token>) = coroutineScope {
         delay(initialDelay)
-        getBalancesWithRateLimit(tokens)
+        flowOf(getBalancesWithRateLimit(tokens))
     }
 
     private suspend fun CoroutineScope.getBalancesWithRateLimit(tokens: List<Token>): List<Balance> {

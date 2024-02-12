@@ -22,11 +22,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +61,11 @@ fun TokensScreen(
     onQueryChanged: (String) -> Unit,
     onBackPressed: () -> Unit,
 ) {
+    val focusRequester = remember { FocusRequester() }
+//    LaunchedEffect(tokensState) {
+//        if (tokensState is TokensState.Tokens)
+//            focusRequester.requestFocus()
+//    }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -84,7 +93,9 @@ fun TokensScreen(
                 onValueChange = onQueryChanged,
                 enabled = tokensState is TokensState.Tokens,
                 label = { Text(text = stringResource(R.string.search_tokens)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
             )
             Spacer(modifier = Modifier.height(32.dp))
             Crossfade(

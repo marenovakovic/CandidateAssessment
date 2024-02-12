@@ -25,9 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import xyz.argent.candidateassessment.R
 
 @Composable
 fun Balances(
@@ -45,7 +48,9 @@ fun Balances(
         ) {
             when (targetState) {
                 Balances.Initial -> InitialContent()
-                Balances.Loading -> CircularProgressIndicator()
+                Balances.Loading -> CircularProgressIndicator(
+                    modifier = Modifier.testTag(TEST_TAG_BALANCES_SCREEN_LOADING),
+                )
                 is Balances.Success -> Balances(targetState.balances)
             }
         }
@@ -56,7 +61,7 @@ fun Balances(
 private fun InitialContent() {
     Text(
         style = MaterialTheme.typography.bodyMedium,
-        text = "Search tokens in order to see balance",
+        text = stringResource(R.string.search_tokens_in_order_to_see_balance),
     )
 }
 
@@ -113,3 +118,5 @@ private fun Balances(balances: List<Balance>) {
 private fun BalancesLayoutPreview() {
     MaterialTheme {}
 }
+
+const val TEST_TAG_BALANCES_SCREEN_LOADING = "test_tag_balances_screen_loading"

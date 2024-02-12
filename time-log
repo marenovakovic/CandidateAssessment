@@ -18,3 +18,4 @@ tests and refactoring - 1 pomodoro
 refactoring + loading balances - 4 pomodori
 improvements + debugging - 2 pomodori
 experimenting with new rate limiting, revert to old one and fixing old one - 3 pomodori
+fixing losing time between invocations - 1 pomodoro

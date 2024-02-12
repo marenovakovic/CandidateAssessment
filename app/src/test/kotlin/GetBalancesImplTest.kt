@@ -146,4 +146,26 @@ class GetBalancesImplTest {
             )
         }
     }
+
+    @Test
+    fun `delay between first and second invocations reduces initial delay during second invocation by that amount`() =
+        runTest {
+            val tokens = tenTokens
+            val strategy = GetBalancesStrategy.FivePerSecond
+            val getBalances = getBalances(strategy = strategy)
+
+            launch {
+                val duration = testScheduler.timeSource.measureTime {
+                    getBalances(tokens)
+                    delay(strategy.perMillis / 2)
+                    getBalances(tokens)
+                }
+
+                val delayBetweenInvocations = strategy.perMillis / 2
+                assertEquals(
+                    strategy.perMillis * 2 + delayBetweenInvocations,
+                    duration.inWholeMilliseconds,
+                )
+            }
+        }
 }

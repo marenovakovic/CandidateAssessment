@@ -23,7 +23,7 @@ class GetBalancesImpl @Inject constructor(
         get() = when {
             previousInvokeEnd == null -> 0
             previousInvokeEnd!!.elapsedNow().inWholeMilliseconds > strategy.perMillis -> 0
-            else -> strategy.perMillis
+            else -> strategy.perMillis - previousInvokeEnd!!.elapsedNow().inWholeMilliseconds
         }
 
     override suspend operator fun invoke(tokens: List<Token>) =

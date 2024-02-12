@@ -22,7 +22,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -70,7 +69,10 @@ fun TokensScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
+                    IconButton(
+                        onClick = onBackPressed,
+                        modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_BACK_BUTTON)
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
@@ -142,4 +144,5 @@ private fun TokensScreenPreview() {
     }
 }
 
+const val TEST_TAG_TOKENS_SCREEN_BACK_BUTTON = "test_tag_tokens_screen_back_button"
 const val TEST_TAG_TOKENS_SCREEN_LOADING = "test_tag_tokens_screen_loading"

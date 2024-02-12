@@ -12,6 +12,7 @@ import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.Balances
 import xyz.argent.candidateassessment.balance.TEST_TAG_BALANCES_SCREEN_LOADING
+import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_BACK_BUTTON
 import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_LOADING
 import xyz.argent.candidateassessment.tokens.TokensScreen
 import xyz.argent.candidateassessment.tokens.TokensState
@@ -38,6 +39,9 @@ class TokensScreenTest {
 
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.tokens))
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag(TEST_TAG_TOKENS_SCREEN_BACK_BUTTON)
             .assertIsDisplayed()
     }
 

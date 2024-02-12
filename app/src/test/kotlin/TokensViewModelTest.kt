@@ -12,7 +12,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.balance.Balance
-import xyz.argent.candidateassessment.balance.Balances
+import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.ConnectivityStatus
@@ -109,7 +109,7 @@ class TokensViewModelTest {
 
             assertEquals(TokensState.Loading, awaitItem())
             assertEquals(
-                TokensState.Tokens("", tokens, Balances.Initial),
+                TokensState.Tokens("", tokens, BalancesState.Initial),
                 awaitItem(),
             )
         }
@@ -130,7 +130,7 @@ class TokensViewModelTest {
 
             assertEquals(TokensState.Loading, awaitItem())
             assertEquals(
-                TokensState.Tokens("", tokens, Balances.Initial),
+                TokensState.Tokens("", tokens, BalancesState.Initial),
                 awaitItem(),
             )
         }
@@ -162,7 +162,7 @@ class TokensViewModelTest {
 
             assertEquals(TokensState.Loading, awaitItem())
             assertEquals(
-                TokensState.Tokens("", tokens, Balances.Initial),
+                TokensState.Tokens("", tokens, BalancesState.Initial),
                 awaitItem(),
             )
         }
@@ -192,16 +192,16 @@ class TokensViewModelTest {
             viewModel.search(query)
 
             assertEquals(
-                TokensState.Tokens(query, queryTokens, Balances.Initial),
+                TokensState.Tokens(query, queryTokens, BalancesState.Initial),
                 awaitItem(),
             )
             assertEquals(
-                TokensState.Tokens(query, queryTokens, Balances.Loading),
+                TokensState.Tokens(query, queryTokens, BalancesState.Loading),
                 awaitItem(),
             )
             val expectedBalances = getBalances(queryTokens)
             assertEquals(
-                TokensState.Tokens(query, queryTokens, Balances.Success(expectedBalances)),
+                TokensState.Tokens(query, queryTokens, BalancesState.Success(expectedBalances)),
                 awaitItem(),
             )
         }
@@ -225,7 +225,7 @@ class TokensViewModelTest {
             viewModel.search(query)
 
             assertEquals(
-                TokensState.Tokens(query, listOf(queryToken), Balances.Initial),
+                TokensState.Tokens(query, listOf(queryToken), BalancesState.Initial),
                 awaitItem(),
             )
             cancelAndIgnoreRemainingEvents()
@@ -258,11 +258,11 @@ class TokensViewModelTest {
             viewModel.search(tokenB.name!!)
 
             assertEquals(
-                TokensState.Tokens(tokenA.name!!, listOf(tokenA), Balances.Initial),
+                TokensState.Tokens(tokenA.name!!, listOf(tokenA), BalancesState.Initial),
                 awaitItem(),
             )
             assertEquals(
-                TokensState.Tokens(tokenA.name!!, listOf(tokenA), Balances.Loading),
+                TokensState.Tokens(tokenA.name!!, listOf(tokenA), BalancesState.Loading),
                 awaitItem(),
             )
             skipItems(3)
@@ -270,7 +270,7 @@ class TokensViewModelTest {
                 TokensState.Tokens(
                     tokenB.name!!,
                     listOf(tokenB),
-                    Balances.Success(getBalances(listOf(tokenB))),
+                    BalancesState.Success(getBalances(listOf(tokenB))),
                 ),
                 awaitItem(),
             )
@@ -300,18 +300,18 @@ class TokensViewModelTest {
             viewModel.search(query)
 
             assertEquals(
-                TokensState.Tokens(query, listOf(queryToken), Balances.Initial),
+                TokensState.Tokens(query, listOf(queryToken), BalancesState.Initial),
                 awaitItem(),
             )
             assertEquals(
-                TokensState.Tokens(query, listOf(queryToken), Balances.Loading),
+                TokensState.Tokens(query, listOf(queryToken), BalancesState.Loading),
                 awaitItem(),
             )
             assertEquals(
                 TokensState.Tokens(
                     query,
                     listOf(queryToken),
-                    Balances.Success(getBalances(tokens)),
+                    BalancesState.Success(getBalances(tokens)),
                 ),
                 awaitItem(),
             )
@@ -342,12 +342,12 @@ class TokensViewModelTest {
             skipItems(2)
 
             assertEquals(
-                TokensState.Tokens(query, queryTokens, Balances.Loading),
+                TokensState.Tokens(query, queryTokens, BalancesState.Loading),
                 awaitItem(),
             )
             val expectedBalances = getBalances(queryTokens)
             assertEquals(
-                TokensState.Tokens(query, queryTokens, Balances.Success(expectedBalances)),
+                TokensState.Tokens(query, queryTokens, BalancesState.Success(expectedBalances)),
                 awaitItem(),
             )
         }

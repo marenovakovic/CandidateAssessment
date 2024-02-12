@@ -11,7 +11,7 @@ import org.junit.Rule
 import org.junit.Test
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.balance.Balance
-import xyz.argent.candidateassessment.balance.Balances
+import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.TEST_TAG_BALANCES_SCREEN_LOADING
 import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_BACK_BUTTON
 import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_LOADING
@@ -96,7 +96,7 @@ class TokensScreenTest {
 
     @Test
     fun tokens_initial_balances() {
-        val tokensState = TokensState.Tokens("", emptyList(), Balances.Initial)
+        val tokensState = TokensState.Tokens("", emptyList(), BalancesState.Initial)
 
         composeTestRule.setContent {
             Content(tokensState = tokensState)
@@ -113,7 +113,7 @@ class TokensScreenTest {
 
     @Test
     fun tokens_loading_balances() {
-        val tokensState = TokensState.Tokens("", emptyList(), Balances.Loading)
+        val tokensState = TokensState.Tokens("", emptyList(), BalancesState.Loading)
 
         composeTestRule.setContent {
             Content(tokensState = tokensState)
@@ -132,7 +132,7 @@ class TokensScreenTest {
     fun tokens_success_balances() {
         val balance = Balance(tokens.first(), Result.success(0.0))
         val tokensState =
-            TokensState.Tokens("", emptyList(), Balances.Success(listOf(balance)))
+            TokensState.Tokens("", emptyList(), BalancesState.Success(listOf(balance)))
 
         composeTestRule.setContent {
             Content(tokensState = tokensState)

@@ -34,11 +34,11 @@ import xyz.argent.candidateassessment.R
 
 @Composable
 fun Balances(
-    balances: Balances,
+    balancesState: BalancesState,
     modifier: Modifier = Modifier,
 ) {
     Crossfade(
-        targetState = balances,
+        targetState = balancesState,
         label = "Balances state crossfade",
         modifier = modifier,
     ) { targetState ->
@@ -47,11 +47,11 @@ fun Balances(
             modifier = Modifier.fillMaxSize(),
         ) {
             when (targetState) {
-                Balances.Initial -> InitialContent()
-                Balances.Loading -> CircularProgressIndicator(
+                BalancesState.Initial -> InitialContent()
+                BalancesState.Loading -> CircularProgressIndicator(
                     modifier = Modifier.testTag(TEST_TAG_BALANCES_SCREEN_LOADING),
                 )
-                is Balances.Success -> Balances(targetState.balances)
+                is BalancesState.Success -> Balances(targetState.balances)
             }
         }
     }

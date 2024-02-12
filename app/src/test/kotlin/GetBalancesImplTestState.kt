@@ -16,7 +16,7 @@ import kotlin.time.measureTime
 private val tenTokens = tokens.take(10)
 
 @OptIn(ExperimentalTime::class)
-class GetBalancesImplTest {
+class GetBalancesImplTestState {
 
     private val GetBalancesStrategy.Companion.OnePerTenMilliseconds: GetBalancesStrategy
         get() = GetBalancesStrategy(1, 10)

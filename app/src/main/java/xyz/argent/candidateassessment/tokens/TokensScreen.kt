@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.balance.Balances
+import xyz.argent.candidateassessment.balance.BalancesState
 
 @Composable
 fun TokensScreen(
@@ -122,7 +123,7 @@ fun TokensScreen(
                             Text(text = stringResource(R.string.internet_not_available))
                         is TokensState.Tokens ->
                             Balances(
-                                balances = targetState.balances,
+                                balancesState = targetState.balancesState,
                                 modifier = Modifier.fillMaxSize(),
                             )
                     }
@@ -147,7 +148,7 @@ private fun Error(retry: () -> Unit) {
 @Composable
 private fun TokensScreenPreview() {
     MaterialTheme {
-        val state = TokensState.Tokens("", tokens.take(3), Balances.Initial)
+        val state = TokensState.Tokens("", tokens.take(3), BalancesState.Initial)
 
         TokensScreen(
             tokensState = state,

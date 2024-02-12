@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.CloseableCoroutineScope
-import xyz.argent.candidateassessment.balance.Balances
+import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.flatMapLatest
@@ -34,7 +34,7 @@ sealed interface TokensState {
     data class Tokens(
         val query: String,
         val tokens: List<Token>,
-        val balances: Balances,
+        val balancesState: BalancesState,
     ) : TokensState
 
     data object ConnectivityError : TokensState
@@ -60,7 +60,7 @@ class TokensViewModel @Inject constructor(
                     TokensState.Tokens(
                         query = query,
                         tokens = tokensState.tokens.search(query),
-                        balances = Balances.Initial,
+                        balancesState = BalancesState.Initial,
                     )
                 else -> tokensState
             }
@@ -73,24 +73,24 @@ class TokensViewModel @Inject constructor(
             .filter { it.query.isNotBlank() }
             .mapLatest { it.tokens }
             .distinctUntilChanged()
-    private val balances =
+    private val balancesState =
         searchedTokens
             .onEach { loadingBalances.update { true } }
             .mapLatest(getBalances)
-            .map(Balances::Success)
+            .map(BalancesState::Success)
             .onEach { loadingBalances.update { false } }
-            .onStart<Balances> { emit(Balances.Initial) }
+            .onStart<BalancesState> { emit(BalancesState.Initial) }
 
     private val _state =
-        combine(tokensState, balances, loadingBalances) { tokensState, balances, loadingBalances ->
+        combine(tokensState, balancesState, loadingBalances) { tokensState, balances, loadingBalances ->
             when (tokensState) {
                 is TokensState.Tokens -> {
                     tokensState.copy(
-                        balances =
+                        balancesState =
                         when {
-                            loadingBalances -> Balances.Loading
-                            balances is Balances.Success -> balances
-                            else -> tokensState.balances
+                            loadingBalances -> BalancesState.Loading
+                            balances is BalancesState.Success -> balances
+                            else -> tokensState.balancesState
                         },
                     )
                 }
@@ -118,7 +118,7 @@ class TokensViewModel @Inject constructor(
         getTokens()
             .fold(
                 onFailure = { TokensState.Error },
-                onSuccess = { TokensState.Tokens("", it, Balances.Initial) },
+                onSuccess = { TokensState.Tokens("", it, BalancesState.Initial) },
             )
 
     fun retry() = init()

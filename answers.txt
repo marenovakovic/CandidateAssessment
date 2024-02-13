@@ -1,0 +1,22 @@
+- How long did you spend on the exercise?
+I logged time in time-log file
+
+- What would you improve if you had more time?
+I would implement paging like balances fetching, showing every five balances that are fetched
+and show loading indicator at the bottom of the list.
+I would maybe implement database and some caching but it doesn't really makes sense for this use case.
+I would maybe separate balances and tokens view models but I'm not sure. They should work together
+and are dependant of one another so I don't particularly like putting them them into separate view models
+since data can get out of sync but it will maybe reduce some of the complexity around getting balances.
+
+- What would you like to highlight in the code?
+Unit + UI tests.
+Connection available/unavailable handling.
+Recovering from process death.
+I purposefully left app crushable so rate limiting can be properly seen when app is running.
+API will return "Max rate reached" and that will crash GetTokenBalanceImpl.
+If it was real app I would handle such case inside GetBalancesImpl and retry such request after a delay.
+But if implemented correctly that shouldn't happen but I'll do it anyways, for good measure.
+
+- If you had to store the private key associated with an Ethereum account on an Android device,
+how would you make that storage secure?

@@ -1,5 +1,4 @@
 import androidx.activity.ComponentActivity
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -13,6 +12,7 @@ import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.TEST_TAG_BALANCES_SCREEN_LOADING
+import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
 import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_BACK_BUTTON
 import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_LOADING
 import xyz.argent.candidateassessment.tokens.TokensScreen
@@ -152,7 +152,7 @@ class TokensScreenTest {
 
     @Composable
     fun Content(tokensState: TokensState) {
-        MaterialTheme {
+        CandidateAssessmentTheme {
             TokensScreen(
                 tokensState = tokensState,
                 onQueryChanged = {},

@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import xyz.argent.candidateassessment.R
+import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
 
 @Composable
 fun Balances(
@@ -116,7 +117,7 @@ private fun Balances(balances: List<Balance>) {
 @Preview
 @Composable
 private fun BalancesLayoutPreview() {
-    MaterialTheme {}
+    CandidateAssessmentTheme {}
 }
 
 const val TEST_TAG_BALANCES_SCREEN_LOADING = "test_tag_balances_screen_loading"

@@ -18,7 +18,6 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.balance.Balances
 import xyz.argent.candidateassessment.balance.BalancesState
+import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
 
 @Composable
 fun TokensScreen(
@@ -147,7 +147,7 @@ private fun Error(retry: () -> Unit) {
 @Preview
 @Composable
 private fun TokensScreenPreview() {
-    MaterialTheme {
+    CandidateAssessmentTheme {
         val state = TokensState.Tokens("", tokens.take(3), BalancesState.Initial)
 
         TokensScreen(

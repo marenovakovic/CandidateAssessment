@@ -28,7 +28,7 @@ class GetBalancesRec @Inject constructor(
 
     override suspend operator fun invoke(tokens: List<Token>) = coroutineScope {
         delay(initialDelay)
-        flowOf(getBalancesWithRateLimit(tokens))
+        getBalancesWithRateLimit(tokens)
     }
 
     private suspend fun CoroutineScope.getBalancesWithRateLimit(tokens: List<Token>): List<Balance> {

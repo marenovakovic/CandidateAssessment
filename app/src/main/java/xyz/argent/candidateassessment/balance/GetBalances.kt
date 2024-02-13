@@ -6,13 +6,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import xyz.argent.candidateassessment.tokens.Token
 import kotlin.time.TimeSource
 
-fun interface GetBalances : suspend (List<Token>) -> Flow<List<Balance>>
+fun interface GetBalances : suspend (List<Token>) -> List<Balance>
 
 @Suppress("SuspendFunctionOnCoroutineScope")
 class GetBalancesImpl @Inject constructor(
@@ -32,7 +30,7 @@ class GetBalancesImpl @Inject constructor(
     override suspend operator fun invoke(tokens: List<Token>) = coroutineScope {
         delay(initialDelay)
         lastRequestBatchTime = TimeSource.Monotonic.markNow()
-        flowOf(getBalancesWithRateLimit(tokens))
+        getBalancesWithRateLimit(tokens)
     }
 
     private suspend fun CoroutineScope.getBalancesWithRateLimit(tokens: List<Token>): List<Balance> {

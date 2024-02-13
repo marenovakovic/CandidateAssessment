@@ -18,7 +18,7 @@ interface BalanceModule {
     fun getTokenBalance(impl: GetTokenBalanceImpl): GetTokenBalance
 
     @Binds
-    fun getBalances(impl: GetBalancesFlow): GetBalances
+    fun getBalances(impl: GetBalancesImpl): GetBalances
 
     companion object {
         @Provides

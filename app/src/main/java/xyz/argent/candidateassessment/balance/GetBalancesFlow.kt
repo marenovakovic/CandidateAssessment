@@ -50,20 +50,21 @@ class GetBalancesFlow @Inject constructor(
     }
 
     override suspend operator fun invoke(tokens: List<Token>) = coroutineScope {
-        delay(initialDelay)
-        lastRequestBatchTime = TimeSource.Monotonic.markNow()
-        flow {
-            val chunks = tokens.chunked(strategy.maxRequests)
-            chunks
-                .foldIndexed<List<Token>, List<Balance>>(emptyList()) { i, acc, chunk ->
-                    val balances = getBalances(chunk)
-                    lastRequestBatchTime = TimeSource.Monotonic.markNow()
-                    if (i != chunks.size - 1) delay(strategy.perMillis)
-                    println("emit")
-                    emit(acc + balances)
-                    acc + balances
-                }
-        }
+        TODO()
+//        delay(initialDelay)
+//        lastRequestBatchTime = TimeSource.Monotonic.markNow()
+//        flow {
+//            val chunks = tokens.chunked(strategy.maxRequests)
+//            chunks
+//                .foldIndexed<List<Token>, List<Balance>>(emptyList()) { i, acc, chunk ->
+//                    val balances = getBalances(chunk)
+//                    lastRequestBatchTime = TimeSource.Monotonic.markNow()
+//                    if (i != chunks.size - 1) delay(strategy.perMillis)
+//                    println("emit")
+//                    emit(acc + balances)
+//                    acc + balances
+//                }
+//        }
     }
 
     private suspend fun CoroutineScope.getBalances(tokens: List<Token>) =

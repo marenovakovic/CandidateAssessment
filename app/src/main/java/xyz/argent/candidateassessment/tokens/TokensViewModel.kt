@@ -11,10 +11,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -77,7 +77,7 @@ class TokensViewModel @Inject constructor(
     private val balancesState =
         searchedTokens
             .onEach { loadingBalances.update { true } }
-            .flatMapLatest(getBalances)
+            .mapLatest(getBalances)
             .map(BalancesState::Success)
             .onEach { loadingBalances.update { false } }
             .onStart<BalancesState> { emit(BalancesState.Initial) }

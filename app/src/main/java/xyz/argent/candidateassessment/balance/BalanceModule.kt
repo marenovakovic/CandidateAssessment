@@ -31,6 +31,6 @@ interface BalanceModule {
                 .create(EtherscanApi::class.java)
 
         @Provides
-        fun getBalanceStrategy() = GetBalancesStrategy.FivePerSecond
+        fun getBalancesRateLimit() = GetBalancesRateLimit.FivePerSecond
     }
 }

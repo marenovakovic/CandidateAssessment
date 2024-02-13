@@ -3,7 +3,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.balance.GetBalancesImpl
-import xyz.argent.candidateassessment.balance.GetBalancesStrategy
+import xyz.argent.candidateassessment.balance.GetBalancesRateLimit
 import xyz.argent.candidateassessment.balance.GetTokenBalance
 import xyz.argent.candidateassessment.tokens.tokens
 import kotlin.random.Random
@@ -18,13 +18,13 @@ private val tenTokens = tokens.take(10)
 @OptIn(ExperimentalTime::class)
 class GetBalancesImplTest {
 
-    private val GetBalancesStrategy.Companion.OnePerTenMilliseconds: GetBalancesStrategy
-        get() = GetBalancesStrategy(1, 10)
+    private val GetBalancesRateLimit.Companion.OnePerTenMilliseconds: GetBalancesRateLimit
+        get() = GetBalancesRateLimit(1, 10)
 
     private fun getBalances(
-        strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
+        rateLimit: GetBalancesRateLimit = GetBalancesRateLimit.FivePerSecond,
         getTokenBalance: GetTokenBalance = GetTokenBalance { Result.success(Random.nextDouble()) },
-    ): GetBalances = GetBalancesImpl(getTokenBalance, strategy)
+    ): GetBalances = GetBalancesImpl(getTokenBalance, rateLimit)
 
     @Test
     fun `for empty token list return empty balance list`() = runTest {
@@ -128,10 +128,10 @@ class GetBalancesImplTest {
     }
 
     @Test
-    fun `strategy rules still apply across invocations`() = runTest {
+    fun `rateLimit rules still apply across invocations`() = runTest {
         val tokens = tenTokens
-        val strategy = GetBalancesStrategy.FivePerSecond
-        val getBalances = getBalances(strategy = strategy)
+        val rateLimit = GetBalancesRateLimit.FivePerSecond
+        val getBalances = getBalances(rateLimit = rateLimit)
 
         launch {
             val duration = testScheduler.timeSource.measureTime {
@@ -139,9 +139,9 @@ class GetBalancesImplTest {
                 getBalances(tokens)
             }
 
-            val delayBetweenInvocations = strategy.perMillis
+            val delayBetweenInvocations = rateLimit.perMillis
             assertEquals(
-                strategy.perMillis * 2 + delayBetweenInvocations,
+                rateLimit.perMillis * 2 + delayBetweenInvocations,
                 duration.inWholeMilliseconds,
             )
         }
@@ -151,19 +151,19 @@ class GetBalancesImplTest {
     fun `delay between first and second invocations reduces initial delay during second invocation by that amount`() =
         runTest {
             val tokens = tenTokens
-            val strategy = GetBalancesStrategy.FivePerSecond
-            val getBalances = getBalances(strategy = strategy)
+            val rateLimit = GetBalancesRateLimit.FivePerSecond
+            val getBalances = getBalances(rateLimit = rateLimit)
 
             launch {
                 val duration = testScheduler.timeSource.measureTime {
                     getBalances(tokens)
-                    delay(strategy.perMillis / 2)
+                    delay(rateLimit.perMillis / 2)
                     getBalances(tokens)
                 }
 
-                val delayBetweenInvocations = strategy.perMillis / 2
+                val delayBetweenInvocations = rateLimit.perMillis / 2
                 assertEquals(
-                    strategy.perMillis * 2 + delayBetweenInvocations,
+                    rateLimit.perMillis * 2 + delayBetweenInvocations,
                     duration.inWholeMilliseconds,
                 )
             }

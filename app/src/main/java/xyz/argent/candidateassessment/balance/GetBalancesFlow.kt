@@ -7,13 +7,9 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.TickerMode
 import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import xyz.argent.candidateassessment.tokens.Token
 import kotlin.time.TimeSource
@@ -21,7 +17,7 @@ import kotlin.time.TimeSource
 @Suppress("SuspendFunctionOnCoroutineScope")
 class GetBalancesFlow @Inject constructor(
     private val getTokenBalance: GetTokenBalance,
-    private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
+    private val strategy: GetBalancesRateLimit = GetBalancesRateLimit.FivePerSecond,
 ) : GetBalances {
 
     private var lastRequestBatchTime: TimeSource.Monotonic.ValueTimeMark? = null

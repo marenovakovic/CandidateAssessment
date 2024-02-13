@@ -14,7 +14,7 @@ fun interface GetBalances : suspend (List<Token>) -> List<Balance>
 @Suppress("SuspendFunctionOnCoroutineScope")
 class GetBalancesImpl @Inject constructor(
     private val getTokenBalance: GetTokenBalance,
-    private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
+    private val rateLimit: GetBalancesRateLimit = GetBalancesRateLimit.FivePerSecond,
 ) : GetBalances {
 
     private var lastInvokeTimeMark: TimeSource.Monotonic.ValueTimeMark? = null
@@ -29,8 +29,8 @@ class GetBalancesImpl @Inject constructor(
         get() = when {
             lastRequestBatchTime == null -> 0
             lastInvokeTimeMark == null -> 0
-            lastRequestBatchTimeDif < strategy.perMillis -> strategy.perMillis - lastRequestBatchTimeDif
-            lastInvokeTimeDif < strategy.perMillis -> strategy.perMillis - lastInvokeTimeDif
+            lastRequestBatchTimeDif < rateLimit.perMillis -> rateLimit.perMillis - lastRequestBatchTimeDif
+            lastInvokeTimeDif < rateLimit.perMillis -> rateLimit.perMillis - lastInvokeTimeDif
             else -> 0
         }
 
@@ -41,12 +41,12 @@ class GetBalancesImpl @Inject constructor(
     }
 
     private suspend fun CoroutineScope.getBalancesWithRateLimit(tokens: List<Token>): List<Balance> {
-        val chunks = tokens.chunked(strategy.maxRequests)
+        val chunks = tokens.chunked(rateLimit.maxRequests)
         return chunks
             .foldIndexed(emptyList()) { i, acc, chunk ->
                 val balances = getBalances(chunk)
                 lastRequestBatchTime = TimeSource.Monotonic.markNow()
-                if (i != chunks.size - 1) delay(strategy.perMillis)
+                if (i != chunks.size - 1) delay(rateLimit.perMillis)
                 acc + balances
             }
     }

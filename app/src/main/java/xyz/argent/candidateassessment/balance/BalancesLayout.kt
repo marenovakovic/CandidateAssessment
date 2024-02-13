@@ -111,7 +111,9 @@ private fun Balances(balances: List<Balance>) {
                         Text(
                             text = it,
                             textAlign = TextAlign.End,
-                            modifier = Modifier.padding(start = 32.dp),
+                            modifier = Modifier
+                                .fillParentMaxWidth(0.5f)
+                                .padding(start = 32.dp),
                         )
                     },
                     onFailure = { Text(text = stringResource(id = R.string.error_occurred)) },

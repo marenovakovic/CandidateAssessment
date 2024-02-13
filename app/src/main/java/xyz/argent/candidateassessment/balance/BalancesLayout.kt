@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -78,8 +79,8 @@ private fun Balances(balances: List<Balance>) {
                 balance.balance.fold(
                     onSuccess = {
                         when {
-                            it > 0 -> Color(0xFFB6D5D6)
-                            it < 0 -> Color(0xFFE0474C)
+                            it.toDouble() > 0 -> Color(0xFFB6D5D6)
+                            it.toDouble() < 0 -> Color(0xFFE0474C)
                             else -> Color(0xFFEFEBE9)
                         }
                     },
@@ -106,7 +107,13 @@ private fun Balances(balances: List<Balance>) {
                     Text(text = balance.token.name.orEmpty())
                 }
                 balance.balance.fold(
-                    onSuccess = { Text(text = it.toString()) },
+                    onSuccess = {
+                        Text(
+                            text = it,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.padding(start = 32.dp),
+                        )
+                    },
                     onFailure = { Text(text = "Error occurred") },
                 )
             }

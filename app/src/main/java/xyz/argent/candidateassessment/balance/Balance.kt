@@ -5,7 +5,7 @@ import xyz.argent.candidateassessment.tokens.Token
 
 data class Balance private constructor(
     val token: Token,
-    val balance: Result<Double>,
+    val balance: Result<String>,
 ) {
 
     companion object {
@@ -17,7 +17,7 @@ data class Balance private constructor(
                         it
                             .toBigDecimal()
                             .setScale(token.decimals?.toInt() ?: 0, RoundingMode.HALF_EVEN)
-                            .toDouble()
+                            .toString()
                     },
             )
     }

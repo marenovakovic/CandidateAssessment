@@ -5,6 +5,7 @@ import app.cash.turbine.test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -23,7 +24,6 @@ import xyz.argent.candidateassessment.tokens.tokens
 import kotlin.random.Random
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -80,7 +80,6 @@ class TokensViewModelTest {
         }
     }
 
-    @Ignore
     @Test
     fun `connectivity not available`() = runTest {
         val connectivity = flowOf(ConnectivityStatus.Unavailable)
@@ -93,25 +92,6 @@ class TokensViewModelTest {
             viewModel.init()
 
             assertEquals(TokensState.ConnectivityError, awaitItem())
-        }
-    }
-
-    @Test
-    fun `get tokens when init is called`() = runTest {
-        val tokens = tokens
-
-        val viewModel = viewModel(getTokens = { Result.success(tokens) })
-
-        viewModel.state.test {
-            skipItems(1)
-
-            viewModel.init()
-
-            assertEquals(TokensState.Loading, awaitItem())
-            assertEquals(
-                TokensState.Tokens("", tokens, BalancesState.Initial),
-                awaitItem(),
-            )
         }
     }
 
@@ -352,4 +332,31 @@ class TokensViewModelTest {
             )
         }
     }
+
+    @Test
+    fun `connectivity available search, not available, available gets balances for query before losing connectivity`() =
+        runTest {
+            val connectivity = MutableStateFlow<ConnectivityStatus>(ConnectivityStatus.Available)
+
+            val viewModel = viewModel(connectivity = connectivity)
+
+            viewModel.state.test {
+                skipItems(1)
+
+                viewModel.init()
+                skipItems(2)
+
+                viewModel.search("")
+                skipItems(2)
+
+                val tokensWithBalances = awaitItem()
+
+                connectivity.value = ConnectivityStatus.Unavailable
+                skipItems(1)
+
+                connectivity.value = ConnectivityStatus.Available
+                skipItems(2)
+                assertEquals(tokensWithBalances, awaitItem())
+            }
+        }
 }

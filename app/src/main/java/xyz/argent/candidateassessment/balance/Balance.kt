@@ -12,13 +12,7 @@ data class Balance private constructor(
         operator fun invoke(token: Token, balance: Result<Double>) =
             Balance(
                 token,
-                balance
-                    .map {
-                        it
-                            .toBigDecimal()
-                            .setScale(token.decimals?.toInt() ?: 0, RoundingMode.HALF_EVEN)
-                            .toString()
-                    },
+                balance.map { String.format("%.${token.decimals?.toInt() ?: 0}f", it) },
             )
     }
 }

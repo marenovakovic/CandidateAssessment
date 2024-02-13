@@ -80,8 +80,7 @@ private fun Balances(balances: List<Balance>) {
                     onSuccess = {
                         when {
                             it.toDouble() > 0 -> Color(0xFFB6D5D6)
-                            it.toDouble() < 0 -> Color(0xFFE0474C)
-                            else -> Color(0xFFEFEBE9)
+                            else -> Color(0xFFE0474C)
                         }
                     },
                     onFailure = { Color(0xFFB11A21) },

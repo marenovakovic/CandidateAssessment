@@ -1,6 +1,5 @@
 package xyz.argent.candidateassessment.balance
 
-import java.math.RoundingMode
 import xyz.argent.candidateassessment.tokens.Token
 
 data class Balance private constructor(

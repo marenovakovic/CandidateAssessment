@@ -114,7 +114,7 @@ private fun Balances(balances: List<Balance>) {
                             modifier = Modifier.padding(start = 32.dp),
                         )
                     },
-                    onFailure = { Text(text = "Error occurred") },
+                    onFailure = { Text(text = stringResource(id = R.string.error_occurred)) },
                 )
             }
         }

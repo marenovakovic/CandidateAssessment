@@ -6,7 +6,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flowOf
 import xyz.argent.candidateassessment.tokens.Token
 import kotlin.time.TimeSource
 
@@ -18,18 +17,26 @@ class GetBalancesImpl @Inject constructor(
     private val strategy: GetBalancesStrategy = GetBalancesStrategy.FivePerSecond,
 ) : GetBalances {
 
+    private var lastInvokeTimeMark: TimeSource.Monotonic.ValueTimeMark? = null
+    private val lastInvokeTimeDif: Long
+        get() = lastInvokeTimeMark?.elapsedNow()?.inWholeMilliseconds ?: 0
+
     private var lastRequestBatchTime: TimeSource.Monotonic.ValueTimeMark? = null
+    private val lastRequestBatchTimeDif: Long
+        get() = lastRequestBatchTime?.elapsedNow()?.inWholeMilliseconds ?: 0
 
     private val initialDelay: Long
         get() = when {
             lastRequestBatchTime == null -> 0
-            lastRequestBatchTime!!.elapsedNow().inWholeMilliseconds > strategy.perMillis -> 0
-            else -> strategy.perMillis
+            lastInvokeTimeMark == null -> 0
+            lastRequestBatchTimeDif < strategy.perMillis -> strategy.perMillis - lastRequestBatchTimeDif
+            lastInvokeTimeDif < strategy.perMillis -> strategy.perMillis - lastInvokeTimeDif
+            else -> 0
         }
 
     override suspend operator fun invoke(tokens: List<Token>) = coroutineScope {
         delay(initialDelay)
-        lastRequestBatchTime = TimeSource.Monotonic.markNow()
+        lastInvokeTimeMark = TimeSource.Monotonic.markNow()
         getBalancesWithRateLimit(tokens)
     }
 

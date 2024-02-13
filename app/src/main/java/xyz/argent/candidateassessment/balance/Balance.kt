@@ -6,7 +6,6 @@ data class Balance private constructor(
     val token: Token,
     val balance: Result<String>,
 ) {
-
     companion object {
         operator fun invoke(token: Token, balance: Result<Double>) =
             Balance(

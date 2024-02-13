@@ -20,3 +20,5 @@ But if implemented correctly that shouldn't happen but I'll do it anyways, for g
 
 - If you had to store the private key associated with an Ethereum account on an Android device,
 how would you make that storage secure?
+I would encrypt/decrypt it using key that's stored in Android Keystore and then put that
+encrypted key inside encrypted SharedPreferences.

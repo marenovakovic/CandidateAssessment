@@ -1,5 +1,7 @@
 1 pomodoro = 25 min
 
+total = ~18h
+
 getting to know the project - 1 pomodoro
 adding dependencies and setting up Compose - 1 pomodoro
 being lost with some gradle tasks - 1 pomodoro
@@ -23,3 +25,4 @@ process death - 1 pomodoro
 cleanup + retry on error - 1 pomodoro
 experimenting with different GetBalances implementations.
     ticker, channel as queue, flow fan-out, fan-in. 6 pomodori
+finishing touches - 2 pomodori

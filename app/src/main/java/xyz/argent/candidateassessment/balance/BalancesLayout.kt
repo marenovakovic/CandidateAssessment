@@ -101,7 +101,7 @@ private fun Balances(balances: List<Balance>) {
                         model = balance.token.image,
                         contentDescription = null,
                         contentScale = ContentScale.FillBounds,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(32.dp),
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = balance.token.name.orEmpty())

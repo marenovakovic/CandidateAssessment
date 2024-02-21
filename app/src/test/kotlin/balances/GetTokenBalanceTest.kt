@@ -1,13 +1,14 @@
+package balances
+
 import io.mockk.coVerify
 import io.mockk.spyk
 import kotlinx.coroutines.test.runTest
+import tokens.tokens
 import xyz.argent.candidateassessment.app.Constants
-import xyz.argent.candidateassessment.balance.EtherscanApiMock
 import xyz.argent.candidateassessment.balance.GetTokenBalanceImpl
-import xyz.argent.candidateassessment.tokens.tokens
 import kotlin.test.Test
 
-class GetTokenBalanceImplTest {
+class GetTokenBalanceTest {
 
     @Test
     fun `calls api`() = runTest {
@@ -18,7 +19,7 @@ class GetTokenBalanceImplTest {
         getTokenBalance(token)
 
         coVerify(exactly = 1) {
-            api.getTokenBalance(
+            EtherscanApiMock.getTokenBalance(
                 token.address,
                 Constants.walletAddress,
                 Constants.etherscanApiKey,

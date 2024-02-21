@@ -17,6 +17,9 @@ interface TokensModule {
     @Binds
     fun getTokens(impl: GetTokensImpl): GetTokens
 
+    @Binds
+    fun observeTokens(impl: ObserveTokensImpl): ObserveTokens
+
     companion object {
         @Provides
         fun ethExplorerApi(okHttpClient: OkHttpClient, moshi: Moshi) =

@@ -31,7 +31,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import kotlinx.collections.immutable.ImmutableList
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
 
@@ -69,7 +68,7 @@ private fun InitialContent() {
 }
 
 @Composable
-private fun Balances(balances: ImmutableList<Balance>) {
+private fun Balances(balances: List<Balance>) {
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),

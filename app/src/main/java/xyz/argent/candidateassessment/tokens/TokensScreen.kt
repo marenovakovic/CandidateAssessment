@@ -148,7 +148,7 @@ private fun Error(retry: () -> Unit) {
 @Composable
 private fun TokensScreenPreview() {
     CandidateAssessmentTheme {
-        val state = TokensState.Tokens("", emptyList(), BalancesState.Initial)
+        val state = TokensState.Tokens("", tokens.take(3), BalancesState.Initial)
 
         TokensScreen(
             tokensState = state,

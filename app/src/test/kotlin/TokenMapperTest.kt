@@ -1,7 +1,6 @@
-package tokens
-
 import xyz.argent.candidateassessment.tokens.TokenImageBaseUrl
 import xyz.argent.candidateassessment.tokens.toToken
+import xyz.argent.candidateassessment.tokens.tokensResponse
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

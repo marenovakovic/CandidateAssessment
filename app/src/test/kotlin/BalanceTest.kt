@@ -1,7 +1,5 @@
-package balances
-
-import tokens.tokens
 import xyz.argent.candidateassessment.balance.Balance
+import xyz.argent.candidateassessment.tokens.tokens
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

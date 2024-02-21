@@ -7,13 +7,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -23,6 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.CloseableCoroutineScope
+import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
@@ -46,15 +46,27 @@ class TokensViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val coroutineScope: CloseableCoroutineScope,
     connectivityObserver: ConnectivityObserver,
-    private val getTokens: GetTokens,
+    observeTokens: ObserveTokens,
     getBalances: GetBalances,
 ) : ViewModel(coroutineScope) {
 
     private val query = savedStateHandle.getStateFlow(QUERY, "")
     private val tokens = MutableStateFlow<TokensState>(TokensState.Initial)
+    private val _tokens = observeTokens()
 
+    private val _tokensState =
+        combine(_tokens, query) { tokens, query ->
+            TokensState.Tokens(
+                query = query,
+                tokens = tokens.search(query),
+                balancesState = BalancesState.Initial,
+            )
+        }
+            .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
+
+    private val loadingTokens = MutableStateFlow(false)
     private val tokensState =
-        combine(query, tokens) { query, tokensState ->
+        combine(_tokens, query) { tokens, query ->
             when (tokensState) {
                 is TokensState.Tokens ->
                     TokensState.Tokens(
@@ -66,19 +78,17 @@ class TokensViewModel @Inject constructor(
             }
         }
 
-    private val loadingBalances = MutableStateFlow(false)
-
     private val searchedTokens =
-        tokensState
-            .filterIsInstance<TokensState.Tokens>()
-            .filter { it.query.isNotBlank() }
-            .mapLatest { it.tokens }
+        combine(_tokens, query) { tokens, query -> tokens.search(query) }
             .distinctUntilChanged()
+
+    private val loadingBalances = MutableStateFlow(false)
 
     private val balancesState =
         searchedTokens
             .onEach { loadingBalances.update { true } }
             .mapLatest(getBalances)
+            .map(List<Balance>::toImmutableList)
             .map(BalancesState::Success)
             .onEach { loadingBalances.update { false } }
             .onStart<BalancesState> { emit(BalancesState.Initial) }

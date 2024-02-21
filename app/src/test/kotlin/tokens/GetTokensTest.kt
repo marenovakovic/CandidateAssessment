@@ -1,3 +1,5 @@
+package tokens
+
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.spyk
@@ -5,11 +7,10 @@ import kotlinx.coroutines.test.runTest
 import xyz.argent.candidateassessment.tokens.EthExplorerApi
 import xyz.argent.candidateassessment.tokens.GetTokensImpl
 import xyz.argent.candidateassessment.tokens.toToken
-import xyz.argent.candidateassessment.tokens.tokensResponse
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class GetTokensImplTest {
+class GetTokensTest {
 
     @Test
     fun `get tokens from the api`() = runTest {

@@ -1,11 +1,13 @@
+package balances
+
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import tokens.tokens
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.balance.GetBalancesImpl
 import xyz.argent.candidateassessment.balance.GetBalancesRateLimit
 import xyz.argent.candidateassessment.balance.GetTokenBalance
-import xyz.argent.candidateassessment.tokens.tokens
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,7 +18,7 @@ import kotlin.time.measureTime
 private val tenTokens = tokens.take(10)
 
 @OptIn(ExperimentalTime::class)
-class GetBalancesImplTest {
+class GetBalancesTest {
 
     private val GetBalancesRateLimit.Companion.OnePerTenMilliseconds: GetBalancesRateLimit
         get() = GetBalancesRateLimit(1, 10)

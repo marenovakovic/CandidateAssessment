@@ -2,7 +2,6 @@ package tokens
 
 import app.cash.turbine.test
 import io.mockk.spyk
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import xyz.argent.candidateassessment.tokens.GetTokens
 import xyz.argent.candidateassessment.tokens.ObserveTokens
@@ -24,7 +23,7 @@ class ObserveTokensTest {
         val tokensDao = TokensDaoFake(tokens)
         val observeTokens = observeTokens(tokensDao)
 
-        observeTokens().test {
+        observeTokens.tokens.test {
             assertEquals(tokens, awaitItem())
         }
     }
@@ -33,14 +32,15 @@ class ObserveTokensTest {
     fun `fetch new tokens and save them to TokensDao`() = runTest {
         val tokens = tokens.take(10)
         val tokensDao = spyk(TokensDaoFake())
-        val getTokens = GetTokens {
-            delay(1_000)
-            Result.success(tokens)
-        }
+        val getTokens = GetTokens { Result.success(tokens) }
 
         val observeTokens = observeTokens(tokensDao, getTokens)
 
-        observeTokens().test {
+        observeTokens.tokens.test {
+            assertEquals(emptyList(), awaitItem())
+
+            observeTokens.refreshTokens()
+
             assertEquals(tokens, awaitItem())
         }
     }

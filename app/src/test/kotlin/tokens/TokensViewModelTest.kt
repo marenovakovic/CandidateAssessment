@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -21,7 +20,7 @@ import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.ConnectivityStatus
-import xyz.argent.candidateassessment.tokens.ObserveTokens
+import xyz.argent.candidateassessment.tokens.GetTokens
 import xyz.argent.candidateassessment.tokens.TokensState
 import xyz.argent.candidateassessment.tokens.TokensViewModel
 import kotlin.random.Random
@@ -38,10 +37,10 @@ class TokensViewModelTest {
     private fun viewModel(
         savedStateHandle: SavedStateHandle = SavedStateHandle(),
         connectivity: Flow<ConnectivityStatus> = flowOf(ConnectivityStatus.Available),
-        observeTokens: ObserveTokens = ObserveTokens { flowOf(tokens.take(10)) },
+        getTokens: GetTokens = GetTokens { Result.success(tokens) },
         getBalances: GetBalances = GetBalances { tokens ->
             tokens.map { token ->
-                Balance(token, Result.success(Random.nextDouble()))
+                Balance(token, Result.success("1234"))
             }
         },
     ) =
@@ -51,7 +50,7 @@ class TokensViewModelTest {
             connectivityObserver = object : ConnectivityObserver {
                 override val status = connectivity
             },
-            observeTokens = observeTokens,
+            getTokens = getTokens,
             getBalances = getBalances,
         )
 
@@ -72,7 +71,7 @@ class TokensViewModelTest {
 
     @Test
     fun `error getting tokens`() = runTest {
-        val viewModel = viewModel(observeTokens = { flow { throw Throwable() } })
+        val viewModel = viewModel(getTokens = { Result.failure(Throwable()) })
 
         viewModel.state.test {
             skipItems(1)
@@ -106,7 +105,7 @@ class TokensViewModelTest {
         val tokens = tokens
 
         val viewModel =
-            viewModel(connectivity = connectivity, observeTokens = { flowOf(tokens) })
+            viewModel(connectivity = connectivity, getTokens = { Result.success(tokens) })
 
         viewModel.state.test {
             skipItems(1)
@@ -127,12 +126,12 @@ class TokensViewModelTest {
         val tokens = tokens
 
         val viewModel = viewModel(
-//            getTokens = {
-//                if (shouldFail) {
-//                    shouldFail = false
-//                    Result.failure(Throwable())
-//                } else Result.success(tokens)
-//            },
+            getTokens = {
+                if (shouldFail) {
+                    shouldFail = false
+                    Result.failure(Throwable())
+                } else Result.success(tokens)
+            },
         )
 
         viewModel.state.test {
@@ -161,10 +160,10 @@ class TokensViewModelTest {
         val query = "a"
 
         val getBalances = GetBalances { tokens ->
-            tokens.map { Balance(it, Result.success(0.0)) }
+            tokens.map { Balance(it, Result.success("0.0")) }
         }
         val viewModel = viewModel(
-            observeTokens = { flowOf(tokens) },
+            getTokens = { Result.success(tokens) },
             getBalances = getBalances,
         )
 
@@ -199,7 +198,7 @@ class TokensViewModelTest {
         val tokens = listOf(queryToken, nonQueryToken)
         val query = queryToken.name!!.lowercase()
 
-        val viewModel = viewModel(observeTokens = { flowOf(tokens) })
+        val viewModel = viewModel(getTokens = { Result.success(tokens) })
 
         viewModel.state.test {
             skipItems(1)
@@ -224,12 +223,12 @@ class TokensViewModelTest {
         val tokens = listOf(tokenA, tokenB)
         val getBalances = GetBalances {
             it.map { token ->
-                Balance(token, Result.success(0.0))
+                Balance(token, Result.success("0.0"))
             }
         }
 
         val viewModel = viewModel(
-            observeTokens = { flowOf(tokens) },
+            getTokens = { Result.success(tokens) },
             getBalances = getBalances,
         )
 
@@ -267,12 +266,12 @@ class TokensViewModelTest {
         val queryToken = tokens.first().copy(name = "A")
         val nonQueryToken = tokens.first().copy(name = "b")
         val tokens = listOf(queryToken, nonQueryToken)
-        val balances = tokens.map { Balance(it, Result.success(Random.nextDouble())) }
+        val balances = tokens.map { Balance(it, Result.success("1234")) }
         val query = queryToken.name!!.lowercase()
         val getBalances = GetBalances { balances }
 
         val viewModel = viewModel(
-            observeTokens = { flowOf(tokens) },
+            getTokens = { Result.success(tokens) },
             getBalances = getBalances,
         )
 
@@ -311,12 +310,12 @@ class TokensViewModelTest {
         val query = "a"
 
         val getBalances = GetBalances {
-            it.map { Balance(it, Result.success(0.0)) }
+            it.map { Balance(it, Result.success("0.0")) }
         }
         val savedStateHandle = SavedStateHandle(mapOf(TokensViewModel.QUERY to query))
         val viewModel = viewModel(
             savedStateHandle = savedStateHandle,
-            observeTokens = { flowOf(tokens) },
+            getTokens = { Result.success(tokens) },
             getBalances = getBalances,
         )
 

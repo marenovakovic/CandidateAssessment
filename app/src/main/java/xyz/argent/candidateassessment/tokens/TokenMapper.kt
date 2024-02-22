@@ -7,6 +7,6 @@ fun EthExplorerApi.TokenResponse.toToken() =
         address = address,
         name = name,
         symbol = symbol,
-        decimals = decimals,
+        decimals = decimals?.toInt(),
         image = image?.let { "$TokenImageBaseUrl/$it" }.orEmpty(),
     )

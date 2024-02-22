@@ -1,18 +1,22 @@
 package xyz.argent.candidateassessment.tokens
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.onStart
 
-fun interface ObserveTokens : () -> Flow<List<Token>>
+interface ObserveTokens {
+    val tokens: Flow<List<Token>>
+    suspend fun refreshTokens()
+}
 
 class ObserveTokensImpl(
     private val tokensDao: TokensDao,
     private val getTokens: GetTokens,
 ) : ObserveTokens {
-    override fun invoke(): Flow<List<Token>> =
-        tokensDao
-            .tokens
-            .onStart {
-                getTokens().getOrNull()?.let { tokensDao.saveTokens(it) }
-            }
+
+    override val tokens = tokensDao.tokens
+
+    override suspend fun refreshTokens() {
+        getTokens()
+            .getOrNull()
+            ?.let { tokensDao.saveTokens(it) }
+    }
 }

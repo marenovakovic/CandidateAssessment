@@ -25,7 +25,7 @@ class GetBalancesTest {
 
     private fun getBalances(
         rateLimit: GetBalancesRateLimit = GetBalancesRateLimit.FivePerSecond,
-        getTokenBalance: GetTokenBalance = GetTokenBalance { Result.success(Random.nextDouble()) },
+        getTokenBalance: GetTokenBalance = GetTokenBalance { Result.success("1234") },
     ): GetBalances = GetBalancesImpl(getTokenBalance, rateLimit)
 
     @Test
@@ -75,7 +75,7 @@ class GetBalancesTest {
         val delayMillis = 1_000L
         val getBalances = getBalances {
             delay(delayMillis)
-            Result.success(Random.nextDouble())
+            Result.success("1234")
         }
 
         launch {

@@ -4,6 +4,6 @@ data class Token(
     val address: String,
     val name: String?,
     val symbol: String?,
-    val decimals: Double?,
+    val decimals: Int?,
     val image: String?,
 )

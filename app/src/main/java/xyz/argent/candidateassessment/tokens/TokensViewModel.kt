@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -46,27 +48,15 @@ class TokensViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val coroutineScope: CloseableCoroutineScope,
     connectivityObserver: ConnectivityObserver,
-    observeTokens: ObserveTokens,
+    private val getTokens: GetTokens,
     getBalances: GetBalances,
 ) : ViewModel(coroutineScope) {
 
     private val query = savedStateHandle.getStateFlow(QUERY, "")
     private val tokens = MutableStateFlow<TokensState>(TokensState.Initial)
-    private val _tokens = observeTokens()
 
-    private val _tokensState =
-        combine(_tokens, query) { tokens, query ->
-            TokensState.Tokens(
-                query = query,
-                tokens = tokens.search(query),
-                balancesState = BalancesState.Initial,
-            )
-        }
-            .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
-
-    private val loadingTokens = MutableStateFlow(false)
     private val tokensState =
-        combine(_tokens, query) { tokens, query ->
+        combine(query, tokens) { query, tokensState ->
             when (tokensState) {
                 is TokensState.Tokens ->
                     TokensState.Tokens(
@@ -78,11 +68,14 @@ class TokensViewModel @Inject constructor(
             }
         }
 
-    private val searchedTokens =
-        combine(_tokens, query) { tokens, query -> tokens.search(query) }
-            .distinctUntilChanged()
-
     private val loadingBalances = MutableStateFlow(false)
+
+    private val searchedTokens =
+        tokensState
+            .filterIsInstance<TokensState.Tokens>()
+            .filter { it.query.isNotBlank() }
+            .mapLatest { it.tokens }
+            .distinctUntilChanged()
 
     private val balancesState =
         searchedTokens

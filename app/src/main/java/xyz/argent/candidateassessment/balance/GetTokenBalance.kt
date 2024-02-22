@@ -4,7 +4,7 @@ import javax.inject.Inject
 import xyz.argent.candidateassessment.app.Constants
 import xyz.argent.candidateassessment.tokens.Token
 
-fun interface GetTokenBalance : suspend (Token) -> Result<Double>
+fun interface GetTokenBalance : suspend (Token) -> Result<String>
 
 class GetTokenBalanceImpl @Inject constructor(private val api: EtherscanApi) : GetTokenBalance {
     override suspend fun invoke(token: Token) =
@@ -15,5 +15,5 @@ class GetTokenBalanceImpl @Inject constructor(private val api: EtherscanApi) : G
                 Constants.etherscanApiKey,
             )
         }
-            .map { it.result.toDouble() }
+            .map { it.result }
 }

@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import java.math.BigDecimal
 import kotlinx.collections.immutable.ImmutableList
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
@@ -80,8 +81,8 @@ private fun Balances(balances: ImmutableList<Balance>) {
                 balance.balance.fold(
                     onSuccess = {
                         when {
-                            it.toDouble() > 0 -> Color(0xFFB6D5D6)
-                            else -> Color(0xFFE0474C)
+                            it.compareTo(BigDecimal.ZERO) == 0 -> Color(0xFFE0474C)
+                            else -> Color(0xFFB6D5D6)
                         }
                     },
                     onFailure = { Color(0xFFB11A21) },
@@ -109,7 +110,7 @@ private fun Balances(balances: ImmutableList<Balance>) {
                 balance.balance.fold(
                     onSuccess = {
                         Text(
-                            text = it,
+                            text = "${it.toPlainString()} ${balance.token.symbol.orEmpty()}".trim(),
                             textAlign = TextAlign.End,
                             modifier = Modifier
                                 .fillParentMaxWidth(0.5f)

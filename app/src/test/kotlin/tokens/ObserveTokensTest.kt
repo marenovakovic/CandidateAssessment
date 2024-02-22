@@ -1,12 +1,12 @@
 package tokens
 
 import app.cash.turbine.test
-import io.mockk.spyk
 import kotlinx.coroutines.test.runTest
-import xyz.argent.candidateassessment.tokens.GetTokens
+import xyz.argent.candidateassessment.tokens.EthExplorerApi
 import xyz.argent.candidateassessment.tokens.ObserveTokens
 import xyz.argent.candidateassessment.tokens.ObserveTokensImpl
-import xyz.argent.candidateassessment.tokens.TokensDao
+import xyz.argent.candidateassessment.tokens.persistence.TokensDao
+import xyz.argent.candidateassessment.tokens.toToken
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -14,33 +14,50 @@ class ObserveTokensTest {
 
     private fun observeTokens(
         tokensDao: TokensDao = TokensDaoFake(),
-        getTokens: GetTokens = GetTokens { Result.success(tokens.take(10)) },
-    ): ObserveTokens = ObserveTokensImpl(tokensDao, getTokens)
+        stubTokenResponses: () -> List<EthExplorerApi.TokenResponse> =
+            { tokensResponse.tokens.take(2) },
+    ): ObserveTokens = ObserveTokensImpl(
+        tokensDao,
+        EthExplorerApiStub { stubTokenResponses() },
+    )
 
     @Test
     fun `observe tokens from TokensDao`() = runTest {
-        val tokens = tokens.take(10)
+        val responses = tokensResponse.tokens.take(1)
+        val tokens = responses.map { it.toToken() }
         val tokensDao = TokensDaoFake(tokens)
-        val observeTokens = observeTokens(tokensDao)
 
-        observeTokens.tokens.test {
+        val observeTokens = observeTokens(tokensDao) { responses }
+
+        observeTokens().test {
             assertEquals(tokens, awaitItem())
         }
     }
 
     @Test
-    fun `fetch new tokens and save them to TokensDao`() = runTest {
-        val tokens = tokens.take(10)
-        val tokensDao = spyk(TokensDaoFake())
-        val getTokens = GetTokens { Result.success(tokens) }
+    fun `fetch and save tokens when TokensDao doesn't contain any tokens`() = runTest {
+        val responses = tokensResponse.tokens.take(1)
+        val tokens = responses.map { it.toToken() }
+        val tokensDao = TokensDaoFake()
 
-        val observeTokens = observeTokens(tokensDao, getTokens)
+        val observeTokens = observeTokens(tokensDao) { responses }
 
-        observeTokens.tokens.test {
+        observeTokens().test {
             assertEquals(emptyList(), awaitItem())
 
-            observeTokens.refreshTokens()
+            assertEquals(tokens, awaitItem())
+        }
+    }
 
+    @Test
+    fun `when TokensDao contains tokens don't refresh them`() = runTest {
+        val responses = tokensResponse.tokens.take(1)
+        val tokens = responses.map { it.toToken() }
+        val tokensDao = TokensDaoFake(tokens)
+
+        val observeTokens = observeTokens(tokensDao) { throw Throwable() }
+
+        observeTokens().test {
             assertEquals(tokens, awaitItem())
         }
     }

@@ -96,7 +96,6 @@ fun TokensScreen(
             OutlinedTextField(
                 value = (tokensState as? TokensState.Tokens)?.query.orEmpty(),
                 onValueChange = onQueryChanged,
-                enabled = tokensState is TokensState.Tokens,
                 label = { Text(text = stringResource(R.string.search_tokens)) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -119,8 +118,8 @@ fun TokensScreen(
                                 modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_LOADING),
                             )
                         TokensState.Error -> Error(retry = onRetry)
-                        TokensState.ConnectivityError ->
-                            Text(text = stringResource(R.string.internet_not_available))
+//                        TokensState.ConnectivityError ->
+//                            Text(text = stringResource(R.string.internet_not_available))
                         is TokensState.Tokens ->
                             Balances(
                                 balancesState = targetState.balancesState,
@@ -148,7 +147,7 @@ private fun Error(retry: () -> Unit) {
 @Composable
 private fun TokensScreenPreview() {
     CandidateAssessmentTheme {
-        val state = TokensState.Tokens("", emptyList(), BalancesState.Initial)
+        val state = TokensState.Tokens("", BalancesState.Initial)
 
         TokensScreen(
             tokensState = state,

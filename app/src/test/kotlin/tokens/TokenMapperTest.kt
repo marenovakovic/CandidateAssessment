@@ -16,7 +16,7 @@ class TokenMapperTest {
         assertEquals(response.address, token.address)
         assertEquals(response.name, token.name)
         assertEquals(response.symbol, token.symbol)
-        assertEquals(response.decimals?.toInt(), token.decimals)
+        assertEquals(response.decimals, token.decimals)
         assertEquals("$TokenImageBaseUrl/${response.image}", token.image)
     }
 

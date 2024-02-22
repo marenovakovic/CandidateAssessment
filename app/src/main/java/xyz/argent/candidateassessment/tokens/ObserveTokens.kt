@@ -1,22 +1,43 @@
 package xyz.argent.candidateassessment.tokens
 
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import xyz.argent.candidateassessment.tokens.persistence.TokenEntity
+import xyz.argent.candidateassessment.tokens.persistence.TokensDao
+import xyz.argent.candidateassessment.tokens.persistence.toToken
+import xyz.argent.candidateassessment.tokens.persistence.toTokenEntity
 
-interface ObserveTokens {
-    val tokens: Flow<List<Token>>
-    suspend fun refreshTokens()
-}
+fun interface ObserveTokens : () -> Flow<List<Token>>
 
-class ObserveTokensImpl(
+class ObserveTokensImpl @Inject constructor(
     private val tokensDao: TokensDao,
-    private val getTokens: GetTokens,
+    private val api: EthExplorerApi,
 ) : ObserveTokens {
 
-    override val tokens = tokensDao.tokens
+    override fun invoke() =
+        tokensDao
+            .getAllTokens()
+            .onEach {
+                if (it.isEmpty()) refreshTokens()
+            }
+            .map { tokens -> tokens.map(TokenEntity::toToken) }
 
-    override suspend fun refreshTokens() {
+    private suspend fun refreshTokens() {
         getTokens()
             .getOrNull()
-            ?.let { tokensDao.saveTokens(it) }
+            ?.let { tokens ->
+                tokensDao
+                    .saveTokens(tokens.map(Token::toTokenEntity))
+            }
     }
+
+    private suspend fun getTokens() =
+        runCatching {
+            api
+                .getTopTokens()
+                .tokens
+                .map(EthExplorerApi.TokenResponse::toToken)
+        }
 }

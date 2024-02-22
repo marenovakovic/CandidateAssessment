@@ -76,11 +76,15 @@ private fun Balances(balances: ImmutableList<Balance>) {
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
-        items(balances) { balance ->
+        items(
+            items = balances,
+            key = { it.token.address },
+        ) { balance ->
             val color = remember(balance.balance) {
                 balance.balance.fold(
                     onSuccess = {
                         when {
+                            it == null -> Color.White
                             it.compareTo(BigDecimal.ZERO) == 0 -> Color(0xFFE0474C)
                             else -> Color(0xFFB6D5D6)
                         }
@@ -109,13 +113,16 @@ private fun Balances(balances: ImmutableList<Balance>) {
                 }
                 balance.balance.fold(
                     onSuccess = {
-                        Text(
-                            text = "${it.toPlainString()} ${balance.token.symbol.orEmpty()}".trim(),
-                            textAlign = TextAlign.End,
-                            modifier = Modifier
-                                .fillParentMaxWidth(0.5f)
-                                .padding(start = 32.dp),
-                        )
+                        if (it == null)
+                            CircularProgressIndicator()
+                        else
+                            Text(
+                                text = "${it.toPlainString()} ${balance.token.symbol.orEmpty()}".trim(),
+                                textAlign = TextAlign.End,
+                                modifier = Modifier
+                                    .fillParentMaxWidth(0.5f)
+                                    .padding(start = 32.dp),
+                            )
                     },
                     onFailure = { Text(text = stringResource(id = R.string.error_occurred)) },
                 )

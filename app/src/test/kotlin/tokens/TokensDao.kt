@@ -3,11 +3,17 @@ package tokens
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import xyz.argent.candidateassessment.tokens.Token
-import xyz.argent.candidateassessment.tokens.TokensDao
+import xyz.argent.candidateassessment.tokens.persistence.TokenEntity
+import xyz.argent.candidateassessment.tokens.persistence.TokensDao
+import xyz.argent.candidateassessment.tokens.persistence.toTokenEntity
 
 class TokensDaoFake(initialTokens: List<Token> = emptyList()) : TokensDao {
-    private val _tokens = MutableStateFlow(initialTokens)
-    override val tokens: Flow<List<Token>> = _tokens
+    private val _tokens = MutableStateFlow(initialTokens.map { it.toTokenEntity() })
 
-    override suspend fun saveTokens(tokens: List<Token>) = _tokens.emit(tokens)
+    override fun getAllTokens(): Flow<List<TokenEntity>> = _tokens
+
+    override suspend fun getToken(address: String) =
+        _tokens.value.singleOrNull { it.address == address }
+
+    override suspend fun saveTokens(tokens: List<TokenEntity>) = _tokens.emit(tokens)
 }

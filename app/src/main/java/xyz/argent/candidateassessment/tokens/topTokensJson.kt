@@ -486,22 +486,6 @@ const val topTokensJson =
       "opCount": 171718
     },
     {
-      "address": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-      "decimals": "52154551610290355778347041993182267338188766309627722135130266387087561326592",
-      "owner": "0x618f9c67ce7bf1a50afa1e7e0238422601b0ff6e",
-      "totalSupply": "52154551607641569835419005702062657507673916919240501063624304960531622526976",
-      "transfersCount": 0,
-      "txsCount": 3723548,
-      "lastUpdated": 1707316207,
-      "countsUpdated": true,
-      "issuancesCount": 0,
-      "price": false,
-      "holdersCount": 2626,
-      "ethTransfersCount": 1672327,
-      "ts": 1707316214,
-      "opCount": 168797
-    },
-    {
       "address": "0x423f4e6138e475d85cf7ea071ac92097ed631eea",
       "decimals": "18",
       "name": "Pond Coin",

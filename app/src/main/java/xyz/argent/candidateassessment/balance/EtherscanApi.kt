@@ -16,5 +16,9 @@ interface EtherscanApi {
         val status: Long,
         val message: String,
         val result: String,
-    )
+    ) {
+        companion object {
+            val MaxLimitReached = TokenBalanceResponse(0, "NOTOK", "Max rate limit reached")
+        }
+    }
 }

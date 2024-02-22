@@ -20,6 +20,15 @@ interface BalanceModule {
     @Binds
     fun getBalances(impl: GetBalancesImpl): GetBalances
 
+    @Binds
+    fun refreshBalances(impl: RefreshBalancesImpl): RefreshBalances
+
+    @Binds
+    fun observeTokenBalance(impl: ObserveTokenBalanceImpl): ObserveTokenBalance
+
+    @Binds
+    fun observeBalances(impl: ObserveBalancesImpl): ObserveBalances
+
     companion object {
         @Provides
         fun etherscanApi(okHttpClient: OkHttpClient, moshi: Moshi) =

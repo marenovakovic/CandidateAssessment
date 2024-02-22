@@ -15,6 +15,9 @@ val tokensResponse =
 
 val tokens = tokensResponse.tokens.map(EthExplorerApi.TokenResponse::toToken)
 
-object EthExplorerApiStub : EthExplorerApi {
-    override suspend fun getTopTokens() = tokensResponse
+class EthExplorerApiStub(
+    private val tokens: () -> List<EthExplorerApi.TokenResponse> = { tokensResponse.tokens },
+) : EthExplorerApi {
+    override suspend fun getTopTokens() =
+        EthExplorerApi.TopTokensResponse(tokens())
 }

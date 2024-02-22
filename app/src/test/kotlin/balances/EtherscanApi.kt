@@ -10,7 +10,7 @@ object EtherscanApiMock : EtherscanApi {
         address: String,
         apiKey: String,
     ): EtherscanApi.TokenBalanceResponse {
-        val tokens = EthExplorerApiStub.getTopTokens().tokens
+        val tokens = EthExplorerApiStub().getTopTokens().tokens
         val searchesToken = tokens.single { it.address == contractAddress }
         return EtherscanApi.TokenBalanceResponse(1L, "OK", searchesToken.decimals.toString())
     }
@@ -23,7 +23,7 @@ class EtherscanApiDelay(private val delayMillis: Long) : EtherscanApi {
         apiKey: String,
     ): EtherscanApi.TokenBalanceResponse {
         delay(delayMillis)
-        val tokens = EthExplorerApiStub.getTopTokens().tokens
+        val tokens = EthExplorerApiStub().getTopTokens().tokens
         val searchesToken = tokens.single { it.address == contractAddress }
         return EtherscanApi.TokenBalanceResponse(1L, "OK", searchesToken.decimals.toString())
     }

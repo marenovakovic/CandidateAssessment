@@ -8,7 +8,6 @@ import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.balance.GetBalancesImpl
 import xyz.argent.candidateassessment.balance.GetBalancesRateLimit
 import xyz.argent.candidateassessment.balance.GetTokenBalance
-import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -20,13 +19,9 @@ private val tenTokens = tokens.take(10)
 @OptIn(ExperimentalTime::class)
 class GetBalancesTest {
 
-    private val GetBalancesRateLimit.Companion.OnePerTenMilliseconds: GetBalancesRateLimit
-        get() = GetBalancesRateLimit(1, 10)
-
     private fun getBalances(
-        rateLimit: GetBalancesRateLimit = GetBalancesRateLimit.FivePerSecond,
         getTokenBalance: GetTokenBalance = GetTokenBalance { Result.success("1234") },
-    ): GetBalances = GetBalancesImpl(getTokenBalance, rateLimit)
+    ): GetBalances = GetBalancesImpl(getTokenBalance)
 
     @Test
     fun `for empty token list return empty balance list`() = runTest {
@@ -133,7 +128,7 @@ class GetBalancesTest {
     fun `rateLimit rules still apply across invocations`() = runTest {
         val tokens = tenTokens
         val rateLimit = GetBalancesRateLimit.FivePerSecond
-        val getBalances = getBalances(rateLimit = rateLimit)
+        val getBalances = getBalances()
 
         launch {
             val duration = testScheduler.timeSource.measureTime {
@@ -154,7 +149,7 @@ class GetBalancesTest {
         runTest {
             val tokens = tenTokens
             val rateLimit = GetBalancesRateLimit.FivePerSecond
-            val getBalances = getBalances(rateLimit = rateLimit)
+            val getBalances = getBalances()
 
             launch {
                 val duration = testScheduler.timeSource.measureTime {

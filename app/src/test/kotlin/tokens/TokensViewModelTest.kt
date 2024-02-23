@@ -18,12 +18,9 @@ import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.GetBalances
-import xyz.argent.candidateassessment.balance.ObserveBalances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
 import xyz.argent.candidateassessment.connectivity.ConnectivityStatus
 import xyz.argent.candidateassessment.tokens.GetTokens
-import xyz.argent.candidateassessment.tokens.ObserveTokens
-import xyz.argent.candidateassessment.tokens.Token
 import xyz.argent.candidateassessment.tokens.TokensState
 import xyz.argent.candidateassessment.tokens.TokensViewModel
 import kotlin.test.AfterTest
@@ -44,14 +41,6 @@ class TokensViewModelTest {
                 Balance(token, Result.success("1234"))
             }
         },
-        observeTokens: ObserveTokens = ObserveTokens { flowOf(tokens.take(2)) },
-        observeBalances: ObserveBalances =
-            object : ObserveBalances {
-                override fun invoke(tokens: List<Token>) =
-                    flowOf(tokens.map { Balance(it, Result.success("1234")) })
-
-                override suspend fun refresh(tokens: List<Token>) = Unit
-            },
     ) =
         TokensViewModel(
             savedStateHandle = savedStateHandle,
@@ -99,10 +88,6 @@ class TokensViewModelTest {
         val viewModel = viewModel(connectivity = connectivity)
 
         viewModel.state.test {
-            skipItems(1)
-
-            viewModel.init()
-
             assertEquals(TokensState.ConnectivityError, awaitItem())
         }
     }
@@ -358,7 +343,7 @@ class TokensViewModelTest {
                 viewModel.init()
                 skipItems(2)
 
-                viewModel.search("")
+                viewModel.search("a")
                 skipItems(2)
 
                 val tokensWithBalances = awaitItem()

@@ -17,6 +17,11 @@ class BalancesDaoFake : BalancesDao {
                 BalanceEntity(tokenAddress, rawBalance)
             }
 
+    override fun getBalance(tokenAddress: String): BalanceEntity? {
+        val balance = balances.value[tokenAddress] ?: return null
+        return BalanceEntity(tokenAddress, balance)
+    }
+
     override fun observeBalance(tokenAddress: String): Flow<BalanceEntity?> =
         balances.map {
             BalanceEntity(tokenAddress, it[tokenAddress].orEmpty())

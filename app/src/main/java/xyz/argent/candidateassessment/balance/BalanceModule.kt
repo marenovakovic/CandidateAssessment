@@ -9,6 +9,8 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import xyz.argent.candidateassessment.balance.persistence.BalancesDao
+import xyz.argent.candidateassessment.tokens.persistence.TokensDao
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -45,12 +47,14 @@ interface BalanceModule {
         @Provides
         fun getTokenBalance(
             etherscanApi: EtherscanApi,
+            balancesDao: BalancesDao,
             currentTimeMillis: CurrentTimeMillis,
         ): GetTokenBalance =
             GetTokenBalanceImpl(
-                etherscanApi,
-                BackoffTimeMillis.EtherscanApiBackoffTime,
-                currentTimeMillis,
+                api = etherscanApi,
+                balancesDao = balancesDao,
+                backoffTimeMillis = BackoffTimeMillis.EtherscanApiBackoffTime,
+                currentTimeMillis = currentTimeMillis,
             )
     }
 }

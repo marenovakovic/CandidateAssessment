@@ -12,6 +12,9 @@ interface BalancesDao {
     suspend fun getAllBalances(): List<BalanceEntity>?
 
     @Query("SELECT * FROM balances WHERE tokenAddress = :tokenAddress")
+    fun getBalance(tokenAddress: String): BalanceEntity?
+
+    @Query("SELECT * FROM balances WHERE tokenAddress = :tokenAddress")
     fun observeBalance(tokenAddress: String): Flow<BalanceEntity?>
 
     @Insert

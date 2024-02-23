@@ -14,6 +14,8 @@ import xyz.argent.candidateassessment.balance.CurrentTimeMillis
 import xyz.argent.candidateassessment.balance.EtherscanApi
 import xyz.argent.candidateassessment.balance.GetTokenBalance
 import xyz.argent.candidateassessment.balance.GetTokenBalanceImpl
+import xyz.argent.candidateassessment.balance.persistence.BalanceEntity
+import xyz.argent.candidateassessment.balance.persistence.BalancesDao
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -24,27 +26,16 @@ class GetTokenBalanceTest {
 
     private fun getTokenBalance(
         api: EtherscanApi = EtherscanApiMock,
+        balancesDao: BalancesDao = BalancesDaoFake(),
         backoffTimeMillis: BackoffTimeMillis = BackoffTimeMillis(0),
         currentTimeMillis: CurrentTimeMillis = CurrentTimeMillis { 0 },
     ): GetTokenBalance =
-        GetTokenBalanceImpl(api, backoffTimeMillis, currentTimeMillis)
-
-    @Test
-    fun `calls api`() = runTest {
-        val token = tokens.first()
-        val api = spyk(EtherscanApiMock)
-        val getTokenBalance = getTokenBalance(api = api)
-
-        getTokenBalance(token)
-
-        coVerify(exactly = 1) {
-            api.getTokenBalance(
-                token.address,
-                Constants.walletAddress,
-                Constants.etherscanApiKey,
-            )
-        }
-    }
+        GetTokenBalanceImpl(
+            api = api,
+            balancesDao = balancesDao,
+            backoffTimeMillis = backoffTimeMillis,
+            currentTimeMillis = currentTimeMillis,
+        )
 
     @Test
     fun `retry when max limit is reached`() = runTest {
@@ -143,6 +134,54 @@ class GetTokenBalanceTest {
                 Constants.walletAddress,
                 Constants.etherscanApiKey,
             )
+        }
+    }
+
+    @Test
+    fun `if balance for given token is already saved don't fetch it`() = runTest {
+        val token = tokens.first()
+        val balance = "123456789"
+        val api = spyk(EtherscanApiMock)
+        val balancesDao = spyk(BalancesDaoFake())
+        val getTokenBalance = getTokenBalance(api = api, balancesDao = balancesDao)
+
+        balancesDao.saveBalance(BalanceEntity(token.address, balance))
+
+        getTokenBalance(token)
+
+        coVerify(exactly = 0) {
+            api.getTokenBalance(any(), any(), any())
+        }
+        coVerify(exactly = 1) {
+            balancesDao.getBalance(token.address)
+        }
+    }
+
+    @Test
+    fun `save fetched balance for given token if it's not already saved`() = runTest {
+        val token = tokens.first()
+        val balance = "123456789"
+        val api = spyk(EtherscanApiMock)
+        val balancesDao = spyk(BalancesDaoFake())
+        val getTokenBalance = getTokenBalance(api = api, balancesDao = balancesDao)
+
+        balancesDao.saveBalance(BalanceEntity(token.address, balance))
+
+        getTokenBalance(token)
+
+        assertEquals(
+            balance,
+            balancesDao.balances.value[token.address],
+        )
+
+        coVerify(exactly = 0) {
+            api.getTokenBalance(any(), any(), any())
+        }
+        coVerify(exactly = 1) {
+            balancesDao.getBalance(token.address)
+        }
+        coVerify(exactly = 1) {
+            balancesDao.saveBalance(BalanceEntity(token.address, balance))
         }
     }
 }

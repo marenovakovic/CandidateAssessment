@@ -6,6 +6,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import xyz.argent.candidateassessment.app.Constants
+import xyz.argent.candidateassessment.balance.persistence.BalanceEntity
+import xyz.argent.candidateassessment.balance.persistence.BalancesDao
 import xyz.argent.candidateassessment.tokens.Token
 
 fun interface GetTokenBalance : suspend (Token) -> Result<String>
@@ -22,6 +24,7 @@ value class BackoffTimeMillis(val value: Long) {
 
 class GetTokenBalanceImpl @Inject constructor(
     private val api: EtherscanApi,
+    private val balancesDao: BalancesDao,
     private val backoffTimeMillis: BackoffTimeMillis,
     private val currentTimeMillis: CurrentTimeMillis,
 ) : GetTokenBalance {
@@ -29,6 +32,13 @@ class GetTokenBalanceImpl @Inject constructor(
     private val last = AtomicLong(0)
 
     override suspend fun invoke(token: Token): Result<String> =
+        balancesDao
+            .getBalance(token.address)
+            ?.let { Result.success(it.rawBalance) }
+            ?: fetchBalance(token)
+                .also { balance -> saveBalance(token, balance) }
+
+    private suspend fun fetchBalance(token: Token) =
         runCatching {
             mutex.withLock {
                 last.set(currentTimeMillis())
@@ -53,4 +63,13 @@ class GetTokenBalanceImpl @Inject constructor(
                 },
                 { Result.failure(it) },
             )
+
+    private suspend fun saveBalance(token: Token, balance: Result<String>) {
+        balancesDao.saveBalance(
+            BalanceEntity(
+                token.address,
+                balance.getOrNull().orEmpty(),
+            )
+        )
+    }
 }

@@ -6,11 +6,11 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import xyz.argent.candidateassessment.balance.persistence.BalancesDao
-import xyz.argent.candidateassessment.tokens.persistence.TokensDao
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -19,16 +19,8 @@ interface BalanceModule {
     @Binds
     fun getBalances(impl: GetBalancesImpl): GetBalances
 
-    @Binds
-    fun refreshBalances(impl: RefreshBalancesImpl): RefreshBalances
-
-    @Binds
-    fun observeTokenBalance(impl: ObserveTokenBalanceImpl): ObserveTokenBalance
-
-    @Binds
-    fun observeBalances(impl: ObserveBalancesImpl): ObserveBalances
-
     companion object {
+        @Singleton
         @Provides
         fun etherscanApi(okHttpClient: OkHttpClient, moshi: Moshi) =
             Retrofit.Builder()

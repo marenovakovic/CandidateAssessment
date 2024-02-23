@@ -28,6 +28,7 @@ interface AppModule {
     fun connectivityObserver(impl: ConnectivityObserverImpl): ConnectivityObserver
 
     companion object {
+        @Singleton
         @Provides
         fun okHttpClient(): OkHttpClient {
             val loggingInterceptor = HttpLoggingInterceptor().apply {

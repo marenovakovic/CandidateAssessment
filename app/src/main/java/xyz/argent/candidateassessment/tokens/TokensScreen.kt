@@ -37,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.balance.Balances
+import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
 
 @Composable
@@ -122,7 +123,7 @@ fun TokensScreen(
 //                            Text(text = stringResource(R.string.internet_not_available))
                         is TokensState.Tokens ->
                             Balances(
-                                balances = targetState.balances,
+                                balancesState = targetState.balancesState,
                                 modifier = Modifier.fillMaxSize(),
                             )
                     }
@@ -147,7 +148,7 @@ private fun Error(retry: () -> Unit) {
 @Composable
 private fun TokensScreenPreview() {
     CandidateAssessmentTheme {
-        val state = TokensState.Tokens("", persistentListOf())
+        val state = TokensState.Tokens("", BalancesState.Success(persistentListOf()))
 
         TokensScreen(
             tokensState = state,

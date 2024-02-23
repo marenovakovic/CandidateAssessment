@@ -150,6 +150,28 @@ class TokensScreenTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun tokens_success_balance_with_error() {
+        val balance = Balance(tokens.first(), Result.failure(Throwable()))
+        val tokensState =
+            TokensState.Tokens("", emptyList(), BalancesState.Success(persistentListOf(balance)))
+
+        composeTestRule.setContent {
+            Content(tokensState = tokensState)
+        }
+
+        composeTestRule
+            .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
+            .assertIsDisplayed()
+            .assertIsEnabled()
+        composeTestRule
+            .onNodeWithText(balance.token.name!!)
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(composeTestRule.activity.getString(R.string.error_occurred))
+            .assertIsDisplayed()
+    }
+
     @Composable
     fun Content(tokensState: TokensState) {
         CandidateAssessmentTheme {

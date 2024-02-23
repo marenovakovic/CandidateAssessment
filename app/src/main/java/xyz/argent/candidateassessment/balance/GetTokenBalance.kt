@@ -43,10 +43,7 @@ class GetTokenBalanceImpl @Inject constructor(
                 {
                     when {
                         it == EtherscanApi.TokenBalanceResponse.MaxLimitReached -> {
-                            val timeMillis =
-                                backoffTimeMillis.value - (currentTimeMillis() - last.get())
-                            println(timeMillis)
-                            delay(timeMillis)
+                            delay(backoffTimeMillis.value - (currentTimeMillis() - last.get()))
                             invoke(token)
                         }
                         it.status == 0L && it.result != EtherscanApi.TokenBalanceResponse.MaxLimitReached.result ->

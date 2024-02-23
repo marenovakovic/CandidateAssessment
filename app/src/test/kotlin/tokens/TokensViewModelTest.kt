@@ -4,6 +4,7 @@ package tokens
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,7 +36,7 @@ class TokensViewModelTest {
     private fun viewModel(
         savedStateHandle: SavedStateHandle = SavedStateHandle(),
         connectivity: Flow<ConnectivityStatus> = flowOf(ConnectivityStatus.Available),
-        getTokens: GetTokens = GetTokens { Result.success(tokens) },
+        getTokens: GetTokens = GetTokens { Result.success(tokens.take(2)) },
         getBalances: GetBalances = GetBalances { tokens ->
             tokens.map { token ->
                 Balance(token, Result.success("1234"))
@@ -82,13 +83,13 @@ class TokensViewModelTest {
     }
 
     @Test
-    fun `connectivity not available`() = runTest {
+    fun `connectivity not available from the start`() = runTest {
         val connectivity = flowOf(ConnectivityStatus.Unavailable)
 
         val viewModel = viewModel(connectivity = connectivity)
 
         viewModel.state.test {
-            assertEquals(TokensState.ConnectivityError, awaitItem())
+            assertEquals(TokensState.Initial, awaitItem())
         }
     }
 
@@ -334,6 +335,7 @@ class TokensViewModelTest {
     fun `connectivity available search, not available, available gets balances for query before losing connectivity`() =
         runTest {
             val connectivity = MutableStateFlow<ConnectivityStatus>(ConnectivityStatus.Available)
+            val query = "a"
 
             val viewModel = viewModel(connectivity = connectivity)
 
@@ -343,16 +345,24 @@ class TokensViewModelTest {
                 viewModel.init()
                 skipItems(2)
 
-                viewModel.search("a")
+                viewModel.search(query)
                 skipItems(2)
 
                 val tokensWithBalances = awaitItem()
+                assertEquals(
+                    TokensState.Tokens(
+                        query,
+                        emptyList(),
+                        BalancesState.Success(persistentListOf()),
+                    ),
+                    tokensWithBalances,
+                )
 
                 connectivity.value = ConnectivityStatus.Unavailable
-                skipItems(1)
+                skipItems(2)
 
                 connectivity.value = ConnectivityStatus.Available
-                skipItems(2)
+                skipItems(3)
                 assertEquals(tokensWithBalances, awaitItem())
             }
         }

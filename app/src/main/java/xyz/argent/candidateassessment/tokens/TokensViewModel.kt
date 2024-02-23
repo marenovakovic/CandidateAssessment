@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
@@ -85,25 +86,29 @@ class TokensViewModel @Inject constructor(
             .onStart<BalancesState> { emit(BalancesState.Initial) }
 
     val state =
-        combine(
-            tokensState,
-            balancesState,
-            loadingBalances,
-        ) { tokensState, balances, loadingBalances ->
-            when (tokensState) {
-                is TokensState.Tokens -> {
-                    tokensState.copy(
-                        balancesState =
-                        when {
-                            loadingBalances -> BalancesState.Loading
-                            balances is BalancesState.Success -> balances
-                            else -> tokensState.balancesState
-                        },
-                    )
+        connectivityObserver
+            .status
+            .flatMapLatest {
+                combine(
+                    tokensState,
+                    balancesState,
+                    loadingBalances,
+                ) { tokensState, balances, loadingBalances ->
+                    when (tokensState) {
+                        is TokensState.Tokens -> {
+                            tokensState.copy(
+                                balancesState =
+                                when {
+                                    loadingBalances -> BalancesState.Loading
+                                    balances is BalancesState.Success -> balances
+                                    else -> tokensState.balancesState
+                                },
+                            )
+                        }
+                        else -> tokensState
+                    }
                 }
-                else -> tokensState
             }
-        }
             .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
 
     fun init() {

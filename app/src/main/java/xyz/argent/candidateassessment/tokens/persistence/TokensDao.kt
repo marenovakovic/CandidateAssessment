@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TokensDao {
     @Query("SELECT * FROM tokens")
-    fun getAllTokens(): Flow<List<TokenEntity>>
+    fun getAllTokens(): List<TokenEntity>
+
+    @Query("SELECT * FROM tokens")
+    fun observeAllTokens(): Flow<List<TokenEntity>>
 
     @Query("SELECT * FROM tokens WHERE address = :address")
     suspend fun getToken(address: String): TokenEntity?

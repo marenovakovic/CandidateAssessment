@@ -28,7 +28,6 @@ import xyz.argent.candidateassessment.tokens.TokensState
 import xyz.argent.candidateassessment.tokens.TokensViewModel
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -62,8 +61,6 @@ class TokensViewModelTest {
             },
             getTokens = getTokens,
             getBalances = getBalances,
-            observeTokens = observeTokens,
-            observeBalances = observeBalances,
         )
 
     @BeforeTest
@@ -82,21 +79,6 @@ class TokensViewModelTest {
     }
 
     @Test
-    fun `show loading when tokens are empty and connection is available`() = runTest {
-        val connectivity = flowOf(ConnectivityStatus.Unavailable, ConnectivityStatus.Available)
-        val tokens = tokens
-
-        val viewModel =
-            viewModel(observeTokens = { flowOf(emptyList()) })
-
-        viewModel.state.test {
-            skipItems(1)
-
-            assertEquals(TokensState.Loading, awaitItem())
-        }
-    }
-
-    @Test
     fun `error getting tokens`() = runTest {
         val viewModel = viewModel(getTokens = { Result.failure(Throwable()) })
 
@@ -110,21 +92,20 @@ class TokensViewModelTest {
         }
     }
 
-//    @Ignore
-//    @Test
-//    fun `connectivity not available`() = runTest {
-//        val connectivity = flowOf(ConnectivityStatus.Unavailable)
-//
-//        val viewModel = viewModel(connectivity = connectivity)
-//
-//        viewModel.state.test {
-//            skipItems(1)
-//
-//            viewModel.init()
-//
-//            assertEquals(TokensState.ConnectivityError, awaitItem())
-//        }
-//    }
+    @Test
+    fun `connectivity not available`() = runTest {
+        val connectivity = flowOf(ConnectivityStatus.Unavailable)
+
+        val viewModel = viewModel(connectivity = connectivity)
+
+        viewModel.state.test {
+            skipItems(1)
+
+            viewModel.init()
+
+            assertEquals(TokensState.ConnectivityError, awaitItem())
+        }
+    }
 
     @Test
     fun `get tokens when init is called and connection is available`() = runTest {
@@ -141,7 +122,7 @@ class TokensViewModelTest {
 
             assertEquals(TokensState.Loading, awaitItem())
             assertEquals(
-                TokensState.Tokens("", BalancesState.Initial),
+                TokensState.Tokens("", tokens, BalancesState.Initial),
                 awaitItem(),
             )
         }
@@ -173,7 +154,7 @@ class TokensViewModelTest {
 
             assertEquals(TokensState.Loading, awaitItem())
             assertEquals(
-                TokensState.Tokens("", BalancesState.Initial),
+                TokensState.Tokens("", tokens, BalancesState.Initial),
                 awaitItem(),
             )
         }
@@ -203,16 +184,16 @@ class TokensViewModelTest {
             viewModel.search(query)
 
             assertEquals(
-                TokensState.Tokens(query, BalancesState.Initial),
+                TokensState.Tokens(query, queryTokens, BalancesState.Initial),
                 awaitItem(),
             )
             assertEquals(
-                TokensState.Tokens(query, BalancesState.Loading),
+                TokensState.Tokens(query, queryTokens, BalancesState.Loading),
                 awaitItem(),
             )
             val expectedBalances = getBalances(queryTokens).toImmutableList()
             assertEquals(
-                TokensState.Tokens(query, BalancesState.Success(expectedBalances)),
+                TokensState.Tokens(query, queryTokens, BalancesState.Success(expectedBalances)),
                 awaitItem(),
             )
         }
@@ -236,7 +217,7 @@ class TokensViewModelTest {
             viewModel.search(query)
 
             assertEquals(
-                TokensState.Tokens(query, BalancesState.Initial),
+                TokensState.Tokens(query, listOf(queryToken), BalancesState.Initial),
                 awaitItem(),
             )
             cancelAndIgnoreRemainingEvents()
@@ -269,17 +250,18 @@ class TokensViewModelTest {
             viewModel.search(tokenB.name!!)
 
             assertEquals(
-                TokensState.Tokens(tokenA.name!!, BalancesState.Initial),
+                TokensState.Tokens(tokenA.name!!, listOf(tokenA), BalancesState.Initial),
                 awaitItem(),
             )
             assertEquals(
-                TokensState.Tokens(tokenA.name!!, BalancesState.Loading),
+                TokensState.Tokens(tokenA.name!!, listOf(tokenA), BalancesState.Loading),
                 awaitItem(),
             )
             skipItems(3)
             assertEquals(
                 TokensState.Tokens(
                     tokenB.name!!,
+                    listOf(tokenB),
                     BalancesState.Success(getBalances(listOf(tokenB)).toImmutableList()),
                 ),
                 awaitItem(),
@@ -310,16 +292,17 @@ class TokensViewModelTest {
             viewModel.search(query)
 
             assertEquals(
-                TokensState.Tokens(query, BalancesState.Initial),
+                TokensState.Tokens(query, listOf(queryToken), BalancesState.Initial),
                 awaitItem(),
             )
             assertEquals(
-                TokensState.Tokens(query, BalancesState.Loading),
+                TokensState.Tokens(query, listOf(queryToken), BalancesState.Loading),
                 awaitItem(),
             )
             assertEquals(
                 TokensState.Tokens(
                     query,
+                    listOf(queryToken),
                     BalancesState.Success(getBalances(tokens).toImmutableList()),
                 ),
                 awaitItem(),
@@ -351,18 +334,17 @@ class TokensViewModelTest {
             skipItems(2)
 
             assertEquals(
-                TokensState.Tokens(query, BalancesState.Loading),
+                TokensState.Tokens(query, queryTokens, BalancesState.Loading),
                 awaitItem(),
             )
             val expectedBalances = getBalances(queryTokens).toImmutableList()
             assertEquals(
-                TokensState.Tokens(query, BalancesState.Success(expectedBalances)),
+                TokensState.Tokens(query, queryTokens, BalancesState.Success(expectedBalances)),
                 awaitItem(),
             )
         }
     }
 
-    @Ignore
     @Test
     fun `connectivity available search, not available, available gets balances for query before losing connectivity`() =
         runTest {

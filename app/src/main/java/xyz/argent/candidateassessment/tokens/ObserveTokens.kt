@@ -18,7 +18,7 @@ class ObserveTokensImpl @Inject constructor(
 
     override fun invoke() =
         tokensDao
-            .getAllTokens()
+            .observeAllTokens()
             .onEach {
                 if (it.isEmpty()) refreshTokens()
             }

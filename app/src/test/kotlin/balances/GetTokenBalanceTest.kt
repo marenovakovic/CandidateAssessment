@@ -10,7 +10,9 @@ import kotlinx.coroutines.test.runTest
 import tokens.tokens
 import xyz.argent.candidateassessment.app.Constants
 import xyz.argent.candidateassessment.balance.BackoffTimeMillis
+import xyz.argent.candidateassessment.balance.CurrentTimeMillis
 import xyz.argent.candidateassessment.balance.EtherscanApi
+import xyz.argent.candidateassessment.balance.GetTokenBalance
 import xyz.argent.candidateassessment.balance.GetTokenBalanceImpl
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,11 +22,17 @@ import kotlin.time.measureTime
 
 class GetTokenBalanceTest {
 
+    private fun getTokenBalance(
+        api: EtherscanApi = EtherscanApiMock,
+        backoffTimeMillis: BackoffTimeMillis = BackoffTimeMillis(0),
+        currentTimeMillis: CurrentTimeMillis = CurrentTimeMillis { 0 },
+    ): GetTokenBalance = GetTokenBalanceImpl(api, backoffTimeMillis, currentTimeMillis)
+
     @Test
     fun `calls api`() = runTest {
         val token = tokens.first()
         val api = spyk(EtherscanApiMock)
-        val getTokenBalance = GetTokenBalanceImpl(api)
+        val getTokenBalance = getTokenBalance(api = api)
 
         getTokenBalance(token)
 
@@ -55,7 +63,7 @@ class GetTokenBalanceTest {
                     else success
             },
         )
-        val getTokenBalance = GetTokenBalanceImpl(api)
+        val getTokenBalance = getTokenBalance(api = api)
 
         assertEquals(Result.success(balance), getTokenBalance(token))
 
@@ -90,7 +98,7 @@ class GetTokenBalanceTest {
                         else success
                 },
             )
-            val getTokenBalance = GetTokenBalanceImpl(
+            val getTokenBalance = getTokenBalance(
                 api = api,
                 backoffTimeMillis = BackoffTimeMillis(delayInMillis),
                 currentTimeMillis = {
@@ -124,7 +132,7 @@ class GetTokenBalanceTest {
                 ) = failure
             },
         )
-        val getTokenBalance = GetTokenBalanceImpl(api)
+        val getTokenBalance = getTokenBalance(api = api)
 
         assertTrue(getTokenBalance(token).isFailure)
 

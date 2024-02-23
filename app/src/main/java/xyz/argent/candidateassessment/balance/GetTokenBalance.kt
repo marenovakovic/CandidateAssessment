@@ -22,8 +22,8 @@ value class BackoffTimeMillis(val value: Long) {
 
 class GetTokenBalanceImpl @Inject constructor(
     private val api: EtherscanApi,
-    private val backoffTimeMillis: BackoffTimeMillis = BackoffTimeMillis(1_000),
-    private val currentTimeMillis: CurrentTimeMillis = CurrentTimeMillisImpl,
+    private val backoffTimeMillis: BackoffTimeMillis,
+    private val currentTimeMillis: CurrentTimeMillis,
 ) : GetTokenBalance {
     private val mutex = Mutex()
     private val last = AtomicLong(0)

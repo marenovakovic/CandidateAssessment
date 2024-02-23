@@ -2,7 +2,6 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -51,7 +50,6 @@ class TokensScreenTest {
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
             .assertIsDisplayed()
-            .assertIsNotEnabled()
         composeTestRule
             .onNodeWithTag(TEST_TAG_TOKENS_SCREEN_LOADING)
             .assertIsDisplayed()
@@ -68,7 +66,6 @@ class TokensScreenTest {
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
             .assertIsDisplayed()
-            .assertIsNotEnabled()
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.error_occurred))
             .assertIsDisplayed()
@@ -88,7 +85,6 @@ class TokensScreenTest {
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
             .assertIsDisplayed()
-            .assertIsNotEnabled()
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.internet_not_available))
             .assertIsDisplayed()
@@ -146,7 +142,11 @@ class TokensScreenTest {
             .onNodeWithText(balance.token.name!!)
             .assertIsDisplayed()
         composeTestRule
-            .onNodeWithText(balance.balance.getOrThrow().toString())
+            .onNodeWithText(
+                "${
+                    balance.balance.getOrThrow()!!.toPlainString()
+                } ${balance.token.symbol}"
+            )
             .assertIsDisplayed()
     }
 

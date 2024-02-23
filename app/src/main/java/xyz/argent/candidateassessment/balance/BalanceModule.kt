@@ -15,9 +15,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 interface BalanceModule {
 
     @Binds
-    fun getTokenBalance(impl: GetTokenBalanceImpl): GetTokenBalance
-
-    @Binds
     fun getBalances(impl: GetBalancesImpl): GetBalances
 
     @Binds
@@ -41,5 +38,19 @@ interface BalanceModule {
 
         @Provides
         fun getBalancesRateLimit() = GetBalancesRateLimit.FivePerSecond
+
+        @Provides
+        fun currentTimeMillis(): CurrentTimeMillis = CurrentTimeMillisImpl
+
+        @Provides
+        fun getTokenBalance(
+            etherscanApi: EtherscanApi,
+            currentTimeMillis: CurrentTimeMillis,
+        ): GetTokenBalance =
+            GetTokenBalanceImpl(
+                etherscanApi,
+                BackoffTimeMillis.EtherscanApiBackoffTime,
+                currentTimeMillis,
+            )
     }
 }

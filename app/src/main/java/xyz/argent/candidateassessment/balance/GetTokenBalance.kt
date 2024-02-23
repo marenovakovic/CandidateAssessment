@@ -9,15 +9,29 @@ import xyz.argent.candidateassessment.app.Constants
 import xyz.argent.candidateassessment.tokens.Token
 
 fun interface GetTokenBalance : suspend (Token) -> Result<String>
+fun interface CurrentTimeMillis : () -> Long
 
-class GetTokenBalanceImpl @Inject constructor(private val api: EtherscanApi) : GetTokenBalance {
+val CurrentTimeMillisImpl = CurrentTimeMillis { System.currentTimeMillis() }
+
+@JvmInline
+value class BackoffTimeMillis(val value: Long) {
+    companion object {
+        val EtherscanApiBackoffTime = BackoffTimeMillis(1_000)
+    }
+}
+
+class GetTokenBalanceImpl @Inject constructor(
+    private val api: EtherscanApi,
+    private val backoffTimeMillis: BackoffTimeMillis = BackoffTimeMillis(1_000),
+    private val currentTimeMillis: CurrentTimeMillis = CurrentTimeMillisImpl,
+) : GetTokenBalance {
     private val mutex = Mutex()
     private val last = AtomicLong(0)
 
     override suspend fun invoke(token: Token): Result<String> =
         runCatching {
             mutex.withLock {
-                last.set(System.currentTimeMillis())
+                last.set(currentTimeMillis())
                 api.getTokenBalance(
                     token.address,
                     Constants.walletAddress,
@@ -29,7 +43,10 @@ class GetTokenBalanceImpl @Inject constructor(private val api: EtherscanApi) : G
                 {
                     when {
                         it == EtherscanApi.TokenBalanceResponse.MaxLimitReached -> {
-                            delay(1_000 - (System.currentTimeMillis() - last.get()))
+                            val timeMillis =
+                                backoffTimeMillis.value - (currentTimeMillis() - last.get())
+                            println(timeMillis)
+                            delay(timeMillis)
                             invoke(token)
                         }
                         it.status == 0L && it.result != EtherscanApi.TokenBalanceResponse.MaxLimitReached.result ->

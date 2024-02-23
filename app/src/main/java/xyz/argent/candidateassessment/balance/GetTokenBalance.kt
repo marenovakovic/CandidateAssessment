@@ -34,6 +34,7 @@ class GetTokenBalanceImpl @Inject constructor(
     override suspend fun invoke(token: Token): Result<String> =
         balancesDao
             .getBalance(token.address)
+            ?.takeIf { it.rawBalance.isNotBlank() }
             ?.let { Result.success(it.rawBalance) }
             ?: fetchBalance(token)
                 .also { balance -> saveBalance(token, balance) }

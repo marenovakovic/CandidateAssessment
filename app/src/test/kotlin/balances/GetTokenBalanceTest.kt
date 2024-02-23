@@ -184,4 +184,23 @@ class GetTokenBalanceTest {
             balancesDao.saveBalance(BalanceEntity(token.address, balance))
         }
     }
+
+    @Test
+    fun `fetch balance for tokens for which saved balance is empty string`() = runTest {
+        val token = tokens.first()
+        val api = spyk(EtherscanApiMock)
+        val balancesDao = spyk(BalancesDaoFake())
+        val getTokenBalance = getTokenBalance(api = api, balancesDao = balancesDao)
+
+        balancesDao.saveBalance(BalanceEntity(token.address, ""))
+
+        getTokenBalance(token)
+
+        coVerify(exactly = 1) {
+            api.getTokenBalance(token.address, any(), any())
+        }
+        coVerify(exactly = 1) {
+            balancesDao.getBalance(token.address)
+        }
+    }
 }

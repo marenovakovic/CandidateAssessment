@@ -26,7 +26,8 @@ class GetTokenBalanceTest {
         api: EtherscanApi = EtherscanApiMock,
         backoffTimeMillis: BackoffTimeMillis = BackoffTimeMillis(0),
         currentTimeMillis: CurrentTimeMillis = CurrentTimeMillis { 0 },
-    ): GetTokenBalance = GetTokenBalanceImpl(api, backoffTimeMillis, currentTimeMillis)
+    ): GetTokenBalance =
+        GetTokenBalanceImpl(api, backoffTimeMillis, currentTimeMillis)
 
     @Test
     fun `calls api`() = runTest {

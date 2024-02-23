@@ -70,11 +70,14 @@ private fun InitialContent() {
 }
 
 @Composable
-private fun Balances(balances: ImmutableList<Balance>) {
+fun Balances(
+    balances: ImmutableList<Balance>,
+    modifier: Modifier = Modifier,
+) {
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
     ) {
         items(
             items = balances,

@@ -1,5 +1,5 @@
 @file:Suppress("FunctionName")
-@file:OptIn(ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 
 package xyz.argent.candidateassessment.tokens
 
@@ -10,37 +10,30 @@ import javax.inject.Inject
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.BalancesState
-import xyz.argent.candidateassessment.balance.GetBalances
+import xyz.argent.candidateassessment.balance.ObserveBalances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
-import xyz.argent.candidateassessment.connectivity.flatMapLatest
 
 sealed interface TokensState {
     data object Initial : TokensState
     data object Loading : TokensState
     data class Tokens(
         val query: String,
-        val tokens: List<Token>,
-        val balancesState: BalancesState,
+        val balances: ImmutableList<Balance>,
     ) : TokensState
 
-    data object ConnectivityError : TokensState
     data object Error : TokensState
 }
 
@@ -49,87 +42,48 @@ class TokensViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val coroutineScope: CloseableCoroutineScope,
     connectivityObserver: ConnectivityObserver,
-    private val getTokens: GetTokens,
-    getBalances: GetBalances,
+    observeTokens: ObserveTokens,
+    observeBalances: ObserveBalances,
 ) : ViewModel(coroutineScope) {
 
+    // I don't like creation side effects and side effects in general.
+    // I like to have a trigger.
+    // I don't want everything to start when class is created.
+    private val start = Channel<Unit>()
+
     private val query = savedStateHandle.getStateFlow(QUERY, "")
-    private val tokens = MutableStateFlow<TokensState>(TokensState.Initial)
 
-    private val tokensState =
-        combine(query, tokens) { query, tokensState ->
-            when (tokensState) {
-                is TokensState.Tokens ->
-                    TokensState.Tokens(
-                        query = query,
-                        tokens = tokensState.tokens.search(query),
-                        balancesState = BalancesState.Initial,
-                    )
-                else -> tokensState
-            }
-        }
-
-    private val loadingBalances = MutableStateFlow(false)
+    private val loadingTokens = MutableStateFlow(false)
 
     private val searchedTokens =
-        tokensState
-            .filterIsInstance<TokensState.Tokens>()
-            .filter { it.query.isNotBlank() }
-            .mapLatest { it.tokens }
-            .distinctUntilChanged()
+        query.flatMapLatest { observeTokens() }
 
-    private val balancesState =
+    private val balances =
         searchedTokens
-            .onEach { loadingBalances.update { true } }
-            .mapLatest(getBalances)
-            .map(List<Balance>::toImmutableList)
-            .map(BalancesState::Success)
-            .onEach { loadingBalances.update { false } }
-            .onStart<BalancesState> { emit(BalancesState.Initial) }
+            .onEach(observeBalances::refresh)
+            .flatMapLatest(observeBalances)
 
-    private val _state =
+    private val tokensState =
         combine(
-            tokensState,
-            balancesState,
-            loadingBalances,
-        ) { tokensState, balances, loadingBalances ->
-            when (tokensState) {
-                is TokensState.Tokens -> {
-                    tokensState.copy(
-                        balancesState =
-                        when {
-                            loadingBalances -> BalancesState.Loading
-                            balances is BalancesState.Success -> balances
-                            else -> tokensState.balancesState
-                        },
-                    )
-                }
-                else -> tokensState
-            }
+            connectivityObserver.status,
+            query,
+            loadingTokens,
+            observeTokens()
+                .onEach { tokens -> loadingTokens.update { tokens.isEmpty() } },
+            balances,
+        ) { _, query, loadingTokens, tokens, balances ->
+            if (loadingTokens) TokensState.Loading
+            else TokensState.Tokens(query, balances.toImmutableList())
         }
 
     val state =
-        connectivityObserver
-            .status
-            .flatMapLatest(
-                onUnavailable = { flowOf(TokensState.ConnectivityError) },
-                onAvailable = { _state },
-            )
+        start
+            .receiveAsFlow()
+            .onEach { loadingTokens.update { true } }
+            .flatMapLatest { tokensState }
             .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
 
-    fun init() {
-        tokens.update { TokensState.Loading }
-        coroutineScope.launch {
-            tokens.update { loadTokens() }
-        }
-    }
-
-    private suspend fun loadTokens() =
-        getTokens()
-            .fold(
-                onFailure = { TokensState.Error },
-                onSuccess = { TokensState.Tokens("", it, BalancesState.Initial) },
-            )
+    fun init() = start.trySend(Unit)
 
     fun retry() = init()
 

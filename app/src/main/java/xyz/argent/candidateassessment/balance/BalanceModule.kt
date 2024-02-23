@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -30,6 +31,7 @@ interface BalanceModule {
     fun observeBalances(impl: ObserveBalancesImpl): ObserveBalances
 
     companion object {
+        @Singleton
         @Provides
         fun etherscanApi(okHttpClient: OkHttpClient, moshi: Moshi) =
             Retrofit.Builder()

@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import kotlinx.collections.immutable.persistentListOf
 import org.junit.Rule
 import org.junit.Test
 import xyz.argent.candidateassessment.R
@@ -17,7 +18,6 @@ import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_BACK_BUTTON
 import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_LOADING
 import xyz.argent.candidateassessment.tokens.TokensScreen
 import xyz.argent.candidateassessment.tokens.TokensState
-import xyz.argent.candidateassessment.tokens.tokens
 
 class TokensScreenTest {
 
@@ -130,9 +130,9 @@ class TokensScreenTest {
 
     @Test
     fun tokens_success_balances() {
-        val balance = Balance(tokens.first(), Result.success(0.0))
+        val balance = Balance(tokens.first(), Result.success("1234"))
         val tokensState =
-            TokensState.Tokens("", emptyList(), BalancesState.Success(listOf(balance)))
+            TokensState.Tokens("", emptyList(), BalancesState.Success(persistentListOf(balance)))
 
         composeTestRule.setContent {
             Content(tokensState = tokensState)

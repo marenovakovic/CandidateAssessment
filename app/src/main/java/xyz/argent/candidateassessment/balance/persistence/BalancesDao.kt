@@ -2,6 +2,7 @@ package xyz.argent.candidateassessment.balance.persistence
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -12,11 +13,11 @@ interface BalancesDao {
     suspend fun getAllBalances(): List<BalanceEntity>?
 
     @Query("SELECT * FROM balances WHERE tokenAddress = :tokenAddress")
-    fun getBalance(tokenAddress: String): BalanceEntity?
+    suspend fun getBalance(tokenAddress: String): BalanceEntity?
 
     @Query("SELECT * FROM balances WHERE tokenAddress = :tokenAddress")
     fun observeBalance(tokenAddress: String): Flow<BalanceEntity?>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveBalance(balanceEntity: BalanceEntity)
 }

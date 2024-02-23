@@ -10,7 +10,7 @@ import xyz.argent.candidateassessment.tokens.persistence.toTokenEntity
 class TokensDaoFake(initialTokens: List<Token> = emptyList()) : TokensDao {
     val tokens = MutableStateFlow(initialTokens.map { it.toTokenEntity() })
 
-    override fun getAllTokens() = tokens.value
+    override suspend fun getAllTokens() = tokens.value
 
     override fun observeAllTokens(): Flow<List<TokenEntity>> = tokens
 

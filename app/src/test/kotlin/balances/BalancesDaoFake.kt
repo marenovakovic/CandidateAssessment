@@ -17,7 +17,7 @@ class BalancesDaoFake : BalancesDao {
                 BalanceEntity(tokenAddress, rawBalance)
             }
 
-    override fun getBalance(tokenAddress: String): BalanceEntity? {
+    override suspend fun getBalance(tokenAddress: String): BalanceEntity? {
         val balance = balances.value[tokenAddress] ?: return null
         return BalanceEntity(tokenAddress, balance)
     }

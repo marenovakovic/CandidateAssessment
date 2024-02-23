@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
@@ -28,7 +27,6 @@ import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.GetBalances
 import xyz.argent.candidateassessment.connectivity.ConnectivityObserver
-import xyz.argent.candidateassessment.connectivity.flatMapLatest
 
 sealed interface TokensState {
     data object Initial : TokensState
@@ -86,7 +84,7 @@ class TokensViewModel @Inject constructor(
             .onEach { loadingBalances.update { false } }
             .onStart<BalancesState> { emit(BalancesState.Initial) }
 
-    private val _state =
+    val state =
         combine(
             tokensState,
             balancesState,
@@ -106,14 +104,6 @@ class TokensViewModel @Inject constructor(
                 else -> tokensState
             }
         }
-
-    val state =
-        connectivityObserver
-            .status
-            .flatMapLatest(
-                onUnavailable = { flowOf(TokensState.ConnectivityError) },
-                onAvailable = { _state },
-            )
             .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
 
     fun init() {

@@ -4,7 +4,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import xyz.argent.candidateassessment.tokens.EthExplorerApi
 import xyz.argent.candidateassessment.tokens.toToken
-import xyz.argent.candidateassessment.tokens.topTokensJson
 
 val tokensResponse =
     Moshi

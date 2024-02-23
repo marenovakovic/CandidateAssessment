@@ -1,4 +1,4 @@
-package xyz.argent.candidateassessment.tokens
+package tokens
 
 const val topTokensJson =
     """

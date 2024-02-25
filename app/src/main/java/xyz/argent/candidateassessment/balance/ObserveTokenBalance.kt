@@ -4,7 +4,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.balance.persistence.BalanceEntity
 import xyz.argent.candidateassessment.balance.persistence.BalancesDao
@@ -19,10 +18,6 @@ class ObserveTokenBalanceImpl @Inject constructor(
     override fun invoke(token: Token): Flow<Result<String?>> =
         balancesDao
             .observeBalance(token.address)
-            .onEach {
-                if (it?.rawBalance == null)
-                    refreshTokenBalance(token)
-            }
             .map {
                 if (it?.rawBalance?.isBlank() == true) Result.failure(Throwable())
                 else Result.success(it?.rawBalance)

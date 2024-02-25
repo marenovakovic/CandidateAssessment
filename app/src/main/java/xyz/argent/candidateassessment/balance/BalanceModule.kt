@@ -22,6 +22,9 @@ interface BalanceModule {
     fun getBalances(impl: GetBalancesImpl): GetBalances
 
     @Binds
+    fun refreshBalances(impl: RefreshBalancesImpl): RefreshBalances
+
+    @Binds
     fun observeTokenBalance(impl: ObserveTokenBalanceImpl): ObserveTokenBalance
 
     @Binds

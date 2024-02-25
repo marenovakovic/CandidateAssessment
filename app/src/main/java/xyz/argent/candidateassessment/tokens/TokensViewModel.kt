@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.ObserveBalances
@@ -50,6 +51,11 @@ class TokensViewModel @Inject constructor(
                     .filterNotNull()
                     .debounce(250)
                     .mapLatest { query -> tokens.search(query) }
+            }
+            .onEach {
+                coroutineScope.launch {
+                    observeBalances.refresh(it)
+                }
             }
             .flatMapLatest(observeBalances)
 

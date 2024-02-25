@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 data class BalanceEntity(
     @PrimaryKey
     val tokenAddress: String,
-    val rawBalance: String,
+    val rawBalance: String?,
 )

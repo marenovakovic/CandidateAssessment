@@ -4,6 +4,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import xyz.argent.candidateassessment.balance.persistence.BalanceEntity
+import xyz.argent.candidateassessment.balance.persistence.BalancesDao
 import xyz.argent.candidateassessment.tokens.persistence.TokenEntity
 import xyz.argent.candidateassessment.tokens.persistence.TokensDao
 import xyz.argent.candidateassessment.tokens.persistence.toToken
@@ -13,6 +15,7 @@ fun interface ObserveTokens : () -> Flow<List<Token>>
 
 class ObserveTokensImpl @Inject constructor(
     private val tokensDao: TokensDao,
+    private val balancesDao: BalancesDao,
     private val api: EthExplorerApi,
 ) : ObserveTokens {
 
@@ -30,6 +33,9 @@ class ObserveTokensImpl @Inject constructor(
             ?.let { tokens ->
                 tokensDao
                     .saveTokens(tokens.map(Token::toTokenEntity))
+                tokens
+                    .map { BalanceEntity(it.address, null) }
+                    .let { balancesDao.saveBalances(it) }
             }
     }
 

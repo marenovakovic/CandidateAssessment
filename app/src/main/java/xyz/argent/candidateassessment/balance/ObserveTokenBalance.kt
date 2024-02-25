@@ -1,9 +1,11 @@
 package xyz.argent.candidateassessment.balance
 
 import javax.inject.Inject
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.balance.persistence.BalanceEntity
 import xyz.argent.candidateassessment.balance.persistence.BalancesDao
 import xyz.argent.candidateassessment.tokens.Token
@@ -18,7 +20,7 @@ class ObserveTokenBalanceImpl @Inject constructor(
         balancesDao
             .observeBalance(token.address)
             .onEach {
-                if (it == null)
+                if (it?.rawBalance == null)
                     refreshTokenBalance(token)
             }
             .map {
@@ -27,14 +29,18 @@ class ObserveTokenBalanceImpl @Inject constructor(
             }
 
     private suspend fun refreshTokenBalance(token: Token) {
-        getTokenBalance(token)
-            .fold(
-                onSuccess = {
-                    balancesDao.saveBalance(BalanceEntity(token.address, it))
-                },
-                onFailure = {
-                    balancesDao.saveBalance(BalanceEntity(token.address, ""))
-                },
-            )
+        coroutineScope {
+            launch {
+                getTokenBalance(token)
+                    .fold(
+                        onSuccess = {
+                            balancesDao.saveBalance(BalanceEntity(token.address, it))
+                        },
+                        onFailure = {
+                            balancesDao.saveBalance(BalanceEntity(token.address, ""))
+                        },
+                    )
+            }
+        }
     }
 }

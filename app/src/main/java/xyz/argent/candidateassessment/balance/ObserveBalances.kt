@@ -6,12 +6,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import xyz.argent.candidateassessment.tokens.Token
 
-interface ObserveBalances : (List<Token>) -> Flow<List<Balance>>, RefreshBalances
+interface ObserveBalances : (List<Token>) -> Flow<List<Balance>>
 
 class ObserveBalancesImpl @Inject constructor(
     private val observeTokenBalance: ObserveTokenBalance,
-    private val refreshBalances: RefreshBalances,
-) : ObserveBalances, RefreshBalances by refreshBalances {
+) : ObserveBalances {
     override fun invoke(tokens: List<Token>) =
         combine<Balance, List<Balance>>(
             tokens

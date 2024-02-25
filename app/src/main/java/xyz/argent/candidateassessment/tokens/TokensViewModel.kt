@@ -51,8 +51,8 @@ class TokensViewModel @Inject constructor(
                     .debounce(500)
                     .mapLatest { query -> tokens.search(query) }
             }
-            .onEach(observeBalances::refresh)
             .flatMapLatest(observeBalances)
+            .onEach { println(it.size) }
 
     val state = combine(query, balances) { query, balances ->
         TokensState.Tokens(query.orEmpty(), BalancesState.Success(balances.toImmutableList()))

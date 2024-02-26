@@ -8,7 +8,7 @@ import xyz.argent.candidateassessment.balance.persistence.BalanceEntity
 import xyz.argent.candidateassessment.balance.persistence.BalancesDao
 
 class BalancesDaoFake : BalancesDao {
-    val balances = MutableStateFlow(emptyMap<String, String>())
+    val balances = MutableStateFlow(emptyMap<String, String?>())
 
     override suspend fun getAllBalances(): List<BalanceEntity> =
         balances
@@ -17,10 +17,18 @@ class BalancesDaoFake : BalancesDao {
                 BalanceEntity(tokenAddress, rawBalance)
             }
 
+    override suspend fun getBalance(tokenAddress: String): BalanceEntity? =
+        balances.value[tokenAddress]?.let {
+            BalanceEntity(tokenAddress, it)
+        }
+
     override fun observeBalance(tokenAddress: String): Flow<BalanceEntity?> =
         balances.map {
             BalanceEntity(tokenAddress, it[tokenAddress].orEmpty())
         }
+
+    override suspend fun saveBalances(balanceEntries: List<BalanceEntity>) =
+        balanceEntries.forEach { saveBalance(it) }
 
     override suspend fun saveBalance(balanceEntity: BalanceEntity) =
         balances.update { it + (balanceEntity.tokenAddress to balanceEntity.rawBalance) }

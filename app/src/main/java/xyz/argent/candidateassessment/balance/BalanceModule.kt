@@ -10,13 +10,11 @@ import javax.inject.Singleton
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import xyz.argent.candidateassessment.balance.persistence.BalancesDao
 
 @Module
 @InstallIn(SingletonComponent::class)
 interface BalanceModule {
-
-    @Binds
-    fun getTokenBalance(impl: GetTokenBalanceImpl): GetTokenBalance
 
     @Binds
     fun getBalances(impl: GetBalancesImpl): GetBalances
@@ -43,5 +41,21 @@ interface BalanceModule {
 
         @Provides
         fun getBalancesRateLimit() = GetBalancesRateLimit.FivePerSecond
+
+        @Provides
+        fun currentTimeMillis(): CurrentTimeMillis = CurrentTimeMillisImpl
+
+        @Provides
+        fun getTokenBalance(
+            etherscanApi: EtherscanApi,
+            balancesDao: BalancesDao,
+            currentTimeMillis: CurrentTimeMillis,
+        ): GetTokenBalance =
+            GetTokenBalanceImpl(
+                api = etherscanApi,
+                balancesDao = balancesDao,
+                backoffTimeMillis = BackoffTimeMillis.EtherscanApiBackoffTime,
+                currentTimeMillis = currentTimeMillis,
+            )
     }
 }

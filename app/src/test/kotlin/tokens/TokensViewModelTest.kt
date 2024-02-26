@@ -46,9 +46,6 @@ class TokensViewModelTest {
         TokensViewModel(
             savedStateHandle = savedStateHandle,
             coroutineScope = coroutineScope,
-            connectivityObserver = object : ConnectivityObserver {
-                override val status = connectivity
-            },
             observeTokens = observeTokens,
             observeBalances = object : ObserveBalances {
                 override fun invoke(tokens: List<Token>) = balances

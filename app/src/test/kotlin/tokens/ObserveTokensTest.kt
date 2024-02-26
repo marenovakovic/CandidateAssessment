@@ -1,7 +1,9 @@
 package tokens
 
 import app.cash.turbine.test
+import balances.BalancesDaoFake
 import kotlinx.coroutines.test.runTest
+import xyz.argent.candidateassessment.balance.persistence.BalancesDao
 import xyz.argent.candidateassessment.tokens.EthExplorerApi
 import xyz.argent.candidateassessment.tokens.ObserveTokens
 import xyz.argent.candidateassessment.tokens.ObserveTokensImpl
@@ -14,10 +16,12 @@ class ObserveTokensTest {
 
     private fun observeTokens(
         tokensDao: TokensDao = TokensDaoFake(),
+        balancesDao: BalancesDao = BalancesDaoFake(),
         stubTokenResponses: () -> List<EthExplorerApi.TokenResponse> =
             { tokensResponse.tokens.take(2) },
     ): ObserveTokens = ObserveTokensImpl(
         tokensDao,
+        balancesDao,
         EthExplorerApiStub { stubTokenResponses() },
     )
 

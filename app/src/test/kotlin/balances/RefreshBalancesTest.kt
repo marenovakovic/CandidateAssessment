@@ -18,7 +18,7 @@ class RefreshBalancesTest {
         val balancesDao = BalancesDaoFake()
         val balance = "1234"
         val getTokenBalance = GetTokenBalance { Result.success(balance) }
-        val refreshBalances = RefreshBalancesImpl(balancesDao, getTokenBalance)
+        val refreshBalances = RefreshBalancesImpl(getTokenBalance)
 
         val tokens = tokens.first()
         refreshBalances.refresh(listOf(tokens))
@@ -32,7 +32,7 @@ class RefreshBalancesTest {
         val token = tokens.first()
         val balance = "1234"
         val getTokenBalance = GetTokenBalance { Result.success(balance) }
-        val refreshBalances = RefreshBalancesImpl(balancesDao, getTokenBalance)
+        val refreshBalances = RefreshBalancesImpl(getTokenBalance)
 
         balancesDao.saveBalance(BalanceEntity(token.address, balance))
         clearMocks(balancesDao)
@@ -50,7 +50,7 @@ class RefreshBalancesTest {
         val tokens = tokens.take(2)
         val balance = "1234"
         val getTokenBalance = GetTokenBalance { Result.success(balance) }
-        val refreshBalances = RefreshBalancesImpl(balancesDao, getTokenBalance)
+        val refreshBalances = RefreshBalancesImpl(getTokenBalance)
 
         balancesDao.saveBalance(BalanceEntity(tokens.first().address, balance))
         clearMocks(balancesDao)

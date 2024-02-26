@@ -1,10 +1,8 @@
 package xyz.argent.candidateassessment.balance
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,39 +32,6 @@ import java.math.BigDecimal
 import kotlinx.collections.immutable.ImmutableList
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
-
-@Composable
-fun Balances(
-    balancesState: BalancesState,
-    modifier: Modifier = Modifier,
-) {
-    Crossfade(
-        targetState = balancesState,
-        label = "Balances state crossfade",
-        modifier = modifier,
-    ) { targetState ->
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            when (targetState) {
-                BalancesState.Initial -> InitialContent()
-                BalancesState.Loading -> CircularProgressIndicator(
-                    modifier = Modifier.testTag(TEST_TAG_BALANCES_SCREEN_LOADING),
-                )
-                is BalancesState.Success -> Balances(targetState.balances)
-            }
-        }
-    }
-}
-
-@Composable
-private fun InitialContent() {
-    Text(
-        style = MaterialTheme.typography.bodyMedium,
-        text = stringResource(R.string.search_tokens_in_order_to_see_balance),
-    )
-}
 
 @Composable
 fun Balances(

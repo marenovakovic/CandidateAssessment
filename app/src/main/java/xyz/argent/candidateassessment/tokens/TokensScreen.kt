@@ -119,11 +119,9 @@ fun TokensScreen(
                                 modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_LOADING),
                             )
                         TokensState.Error -> Error(retry = onRetry)
-//                        TokensState.ConnectivityError ->
-//                            Text(text = stringResource(R.string.internet_not_available))
                         is TokensState.Tokens ->
                             Balances(
-                                balancesState = targetState.balancesState,
+                                balances = targetState.balances,
                                 modifier = Modifier.fillMaxSize(),
                             )
                     }
@@ -148,7 +146,7 @@ private fun Error(retry: () -> Unit) {
 @Composable
 private fun TokensScreenPreview() {
     CandidateAssessmentTheme {
-        val state = TokensState.Tokens("", BalancesState.Success(persistentListOf()))
+        val state = TokensState.Tokens("", persistentListOf())
 
         TokensScreen(
             tokensState = state,

@@ -13,7 +13,6 @@ fun interface ObserveTokenBalance : (Token) -> Flow<Result<String?>>
 
 class ObserveTokenBalanceImpl @Inject constructor(
     private val balancesDao: BalancesDao,
-    private val getTokenBalance: GetTokenBalance,
 ) : ObserveTokenBalance {
     override fun invoke(token: Token): Flow<Result<String?>> =
         balancesDao
@@ -22,20 +21,4 @@ class ObserveTokenBalanceImpl @Inject constructor(
                 if (it?.rawBalance?.isBlank() == true) Result.failure(Throwable())
                 else Result.success(it?.rawBalance)
             }
-
-    private suspend fun refreshTokenBalance(token: Token) {
-        coroutineScope {
-            launch {
-                getTokenBalance(token)
-                    .fold(
-                        onSuccess = {
-                            balancesDao.saveBalance(BalanceEntity(token.address, it))
-                        },
-                        onFailure = {
-                            balancesDao.saveBalance(BalanceEntity(token.address, ""))
-                        },
-                    )
-            }
-        }
-    }
 }

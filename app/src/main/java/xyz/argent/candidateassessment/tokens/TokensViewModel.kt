@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.CloseableCoroutineScope
+import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.ObserveBalances
 
@@ -28,7 +30,7 @@ sealed interface TokensState {
     data object Loading : TokensState
     data class Tokens(
         val query: String,
-        val balancesState: BalancesState,
+        val balances: ImmutableList<Balance>,
     ) : TokensState
 
     data object Error : TokensState
@@ -60,7 +62,7 @@ class TokensViewModel @Inject constructor(
             .flatMapLatest(observeBalances)
 
     val state = combine(query, balances) { query, balances ->
-        TokensState.Tokens(query.orEmpty(), BalancesState.Success(balances.toImmutableList()))
+        TokensState.Tokens(query.orEmpty(), balances.toImmutableList())
     }
         .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
 

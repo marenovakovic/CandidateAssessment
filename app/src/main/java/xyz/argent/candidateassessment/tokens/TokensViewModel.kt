@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.balance.Balance
-import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.balance.ObserveBalances
 
 sealed interface TokensState {
@@ -65,19 +64,6 @@ class TokensViewModel @Inject constructor(
         TokensState.Tokens(query.orEmpty(), balances.toImmutableList())
     }
         .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
-
-    fun init() {
-
-    }
-
-//    private suspend fun loadTokens() =
-//        getTokens()
-//            .fold(
-//                onFailure = { TokensState.Error },
-//                onSuccess = { TokensState.Tokens("", BalancesState.Initial) },
-//            )
-
-    fun retry() = init()
 
     fun search(query: String) {
         savedStateHandle[QUERY] = query

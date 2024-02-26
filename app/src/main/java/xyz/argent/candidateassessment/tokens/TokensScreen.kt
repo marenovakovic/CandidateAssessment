@@ -45,14 +45,13 @@ fun TokensScreen(
     tokensViewModel: TokensViewModel = hiltViewModel(),
     onBackPressed: () -> Unit,
 ) {
-    remember { tokensViewModel.init(); 1 }
 
     val tokensState by tokensViewModel.state.collectAsState()
 
     TokensScreen(
         tokensState = tokensState,
         onQueryChanged = tokensViewModel::search,
-        onRetry = tokensViewModel::retry,
+        onRetry = {},
         onBackPressed = onBackPressed,
     )
 }

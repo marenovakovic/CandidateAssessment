@@ -82,7 +82,7 @@ class TokensViewModelTest {
 
             val expectedBalances = tokens.map { Balance(it, balance) }.toImmutableList()
             assertEquals(
-                TokensState.Tokens(query, expectedBalances), awaitItem(),
+                TokensState(query, expectedBalances), awaitItem(),
             )
         }
     }
@@ -104,7 +104,7 @@ class TokensViewModelTest {
             viewModel.search(query)
 
             assertEquals(
-                TokensState.Tokens(query, balances.toImmutableList()),
+                TokensState(query, balances.toImmutableList()),
                 awaitItem(),
             )
         }
@@ -131,7 +131,7 @@ class TokensViewModelTest {
 
             val expectedBalances = balances.toImmutableList()
             assertEquals(
-                TokensState.Tokens(query, expectedBalances),
+                TokensState(query, expectedBalances),
                 awaitItem(),
             )
         }

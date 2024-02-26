@@ -1,6 +1,7 @@
 package xyz.argent.candidateassessment.balance
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +20,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -83,8 +84,9 @@ fun Balances(
             items = balances,
             key = { it.token.address },
         ) { balance ->
-            val color = remember(balance.balance) {
-                balance.balance.fold(
+            val color by animateColorAsState(
+                label = "Balance card color",
+                targetValue = balance.balance.fold(
                     onSuccess = {
                         when {
                             it == null -> Color.White
@@ -93,8 +95,8 @@ fun Balances(
                         }
                     },
                     onFailure = { Color(0xFFB11A21) },
-                )
-            }
+                ),
+            )
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,

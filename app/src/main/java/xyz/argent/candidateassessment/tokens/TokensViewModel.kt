@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -24,15 +25,13 @@ import xyz.argent.candidateassessment.CloseableCoroutineScope
 import xyz.argent.candidateassessment.balance.Balance
 import xyz.argent.candidateassessment.balance.ObserveBalances
 
-sealed interface TokensState {
-    data object Initial : TokensState
-    data object Loading : TokensState
-    data class Tokens(
-        val query: String,
-        val balances: ImmutableList<Balance>,
-    ) : TokensState
-
-    data object Error : TokensState
+data class TokensState(
+    val query: String,
+    val balances: ImmutableList<Balance>,
+) {
+    companion object {
+        val Initial = TokensState("", persistentListOf())
+    }
 }
 
 @HiltViewModel
@@ -61,7 +60,7 @@ class TokensViewModel @Inject constructor(
             .flatMapLatest(observeBalances)
 
     val state = combine(query, balances) { query, balances ->
-        TokensState.Tokens(query.orEmpty(), balances.toImmutableList())
+        TokensState(query.orEmpty(), balances.toImmutableList())
     }
         .stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), TokensState.Initial)
 

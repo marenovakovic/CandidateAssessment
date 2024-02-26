@@ -2,8 +2,6 @@
 
 package xyz.argent.candidateassessment.tokens
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,7 +33,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.balance.Balances
-import xyz.argent.candidateassessment.balance.BalancesState
 import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
 
 @Composable
@@ -51,7 +46,6 @@ fun TokensScreen(
     TokensScreen(
         tokensState = tokensState,
         onQueryChanged = tokensViewModel::search,
-        onRetry = {},
         onBackPressed = onBackPressed,
     )
 }
@@ -60,7 +54,6 @@ fun TokensScreen(
 fun TokensScreen(
     tokensState: TokensState,
     onQueryChanged: (String) -> Unit,
-    onRetry: () -> Unit,
     onBackPressed: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -94,7 +87,7 @@ fun TokensScreen(
                 .padding(8.dp),
         ) {
             OutlinedTextField(
-                value = (tokensState as? TokensState.Tokens)?.query.orEmpty(),
+                value = tokensState.query,
                 onValueChange = onQueryChanged,
                 label = { Text(text = stringResource(R.string.search_tokens)) },
                 modifier = Modifier
@@ -102,41 +95,10 @@ fun TokensScreen(
                     .focusRequester(focusRequester),
             )
             Spacer(modifier = Modifier.height(32.dp))
-            Crossfade(
-                targetState = tokensState,
-                label = "TokensScreen content Crossfade",
+            Balances(
+                balances = tokensState.balances,
                 modifier = Modifier.fillMaxSize(),
-            ) { targetState ->
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    when (targetState) {
-                        TokensState.Initial -> Box {}
-                        TokensState.Loading ->
-                            CircularProgressIndicator(
-                                modifier = Modifier.testTag(TEST_TAG_TOKENS_SCREEN_LOADING),
-                            )
-                        TokensState.Error -> Error(retry = onRetry)
-                        is TokensState.Tokens ->
-                            Balances(
-                                balances = targetState.balances,
-                                modifier = Modifier.fillMaxSize(),
-                            )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun Error(retry: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = stringResource(id = R.string.error_occurred))
-        Spacer(modifier = Modifier.height(24.dp))
-        ElevatedButton(onClick = retry) {
-            Text(text = stringResource(id = R.string.retry))
+            )
         }
     }
 }
@@ -145,11 +107,10 @@ private fun Error(retry: () -> Unit) {
 @Composable
 private fun TokensScreenPreview() {
     CandidateAssessmentTheme {
-        val state = TokensState.Tokens("", persistentListOf())
+        val state = TokensState("", persistentListOf())
 
         TokensScreen(
             tokensState = state,
-            onRetry = {},
             onQueryChanged = {},
             onBackPressed = {},
         )

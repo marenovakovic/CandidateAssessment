@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +33,7 @@ import java.math.BigDecimal
 import kotlinx.collections.immutable.ImmutableList
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
+import xyz.argent.candidateassessment.tokens.Token
 
 @Composable
 fun Balances(
@@ -82,7 +84,9 @@ fun Balances(
                 balance.balance.fold(
                     onSuccess = {
                         if (it == null)
-                            CircularProgressIndicator()
+                            CircularProgressIndicator(
+                                modifier = Modifier.testTag(loadingBalanceTestTag(balance.token))
+                            )
                         else
                             Text(
                                 text = "${it.toPlainString()} ${balance.token.symbol.orEmpty()}".trim(),
@@ -105,4 +109,4 @@ private fun BalancesLayoutPreview() {
     CandidateAssessmentTheme {}
 }
 
-const val TEST_TAG_BALANCES_SCREEN_LOADING = "test_tag_balances_screen_loading"
+fun loadingBalanceTestTag(token: Token) = "test_tag_${token.address}_loading_balance"

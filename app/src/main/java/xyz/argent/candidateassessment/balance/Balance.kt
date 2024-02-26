@@ -1,8 +1,10 @@
 package xyz.argent.candidateassessment.balance
 
+import androidx.compose.runtime.Immutable
 import java.math.BigDecimal
 import xyz.argent.candidateassessment.tokens.Token
 
+@Immutable
 data class Balance private constructor(
     val token: Token,
     val balance: Result<BigDecimal?>,

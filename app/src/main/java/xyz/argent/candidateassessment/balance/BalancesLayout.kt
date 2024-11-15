@@ -31,6 +31,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import java.math.BigDecimal
+import kotlinx.collections.immutable.ImmutableList
 import xyz.argent.candidateassessment.R
 import xyz.argent.candidateassessment.theme.CandidateAssessmentTheme
 
@@ -68,19 +70,23 @@ private fun InitialContent() {
 }
 
 @Composable
-private fun Balances(balances: List<Balance>) {
+private fun Balances(balances: ImmutableList<Balance>) {
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
-        items(balances) { balance ->
+        items(
+            items = balances,
+            key = { it.token.address },
+        ) { balance ->
             val color = remember(balance.balance) {
                 balance.balance.fold(
                     onSuccess = {
                         when {
-                            it.toDouble() > 0 -> Color(0xFFB6D5D6)
-                            else -> Color(0xFFE0474C)
+                            it == null -> Color.White
+                            it.compareTo(BigDecimal.ZERO) == 0 -> Color(0xFFE0474C)
+                            else -> Color(0xFFB6D5D6)
                         }
                     },
                     onFailure = { Color(0xFFB11A21) },
@@ -107,13 +113,16 @@ private fun Balances(balances: List<Balance>) {
                 }
                 balance.balance.fold(
                     onSuccess = {
-                        Text(
-                            text = it,
-                            textAlign = TextAlign.End,
-                            modifier = Modifier
-                                .fillParentMaxWidth(0.5f)
-                                .padding(start = 32.dp),
-                        )
+                        if (it == null)
+                            CircularProgressIndicator()
+                        else
+                            Text(
+                                text = "${it.toPlainString()} ${balance.token.symbol.orEmpty()}".trim(),
+                                textAlign = TextAlign.End,
+                                modifier = Modifier
+                                    .fillParentMaxWidth(0.5f)
+                                    .padding(start = 32.dp),
+                            )
                     },
                     onFailure = { Text(text = stringResource(id = R.string.error_occurred)) },
                 )

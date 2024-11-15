@@ -1,9 +1,7 @@
 package xyz.argent.candidateassessment.balance
 
-import kotlinx.coroutines.delay
 import retrofit2.http.GET
 import retrofit2.http.Query
-import xyz.argent.candidateassessment.tokens.EthExplorerApiMock
 
 interface EtherscanApi {
 
@@ -18,38 +16,9 @@ interface EtherscanApi {
         val status: Long,
         val message: String,
         val result: String,
-    )
-}
-
-object EtherscanApiMock : EtherscanApi {
-    override suspend fun getTokenBalance(
-        contractAddress: String,
-        address: String,
-        apiKey: String,
-    ): EtherscanApi.TokenBalanceResponse {
-        val tokens = EthExplorerApiMock.getTopTokens().tokens
-        val searchesToken = tokens.single { it.address == contractAddress }
-        return EtherscanApi.TokenBalanceResponse(1L, "OK", searchesToken.decimals.toString())
+    ) {
+        companion object {
+            val MaxLimitReached = TokenBalanceResponse(0, "NOTOK", "Max rate limit reached")
+        }
     }
-}
-
-class EtherscanApiDelay(private val delayMillis: Long) : EtherscanApi {
-    override suspend fun getTokenBalance(
-        contractAddress: String,
-        address: String,
-        apiKey: String,
-    ): EtherscanApi.TokenBalanceResponse {
-        delay(delayMillis)
-        val tokens = EthExplorerApiMock.getTopTokens().tokens
-        val searchesToken = tokens.single { it.address == contractAddress }
-        return EtherscanApi.TokenBalanceResponse(1L, "OK", searchesToken.decimals.toString())
-    }
-}
-
-object EtherscanApiFail : EtherscanApi {
-    override suspend fun getTokenBalance(
-        contractAddress: String,
-        address: String,
-        apiKey: String,
-    ): EtherscanApi.TokenBalanceResponse = throw Throwable()
 }

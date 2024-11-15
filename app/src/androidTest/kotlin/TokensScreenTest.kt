@@ -2,10 +2,10 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import kotlinx.collections.immutable.persistentListOf
 import org.junit.Rule
 import org.junit.Test
 import xyz.argent.candidateassessment.R
@@ -17,7 +17,6 @@ import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_BACK_BUTTON
 import xyz.argent.candidateassessment.tokens.TEST_TAG_TOKENS_SCREEN_LOADING
 import xyz.argent.candidateassessment.tokens.TokensScreen
 import xyz.argent.candidateassessment.tokens.TokensState
-import xyz.argent.candidateassessment.tokens.tokens
 
 class TokensScreenTest {
 
@@ -51,7 +50,6 @@ class TokensScreenTest {
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
             .assertIsDisplayed()
-            .assertIsNotEnabled()
         composeTestRule
             .onNodeWithTag(TEST_TAG_TOKENS_SCREEN_LOADING)
             .assertIsDisplayed()
@@ -68,7 +66,6 @@ class TokensScreenTest {
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
             .assertIsDisplayed()
-            .assertIsNotEnabled()
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.error_occurred))
             .assertIsDisplayed()
@@ -88,7 +85,6 @@ class TokensScreenTest {
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
             .assertIsDisplayed()
-            .assertIsNotEnabled()
         composeTestRule
             .onNodeWithText(composeTestRule.activity.getString(R.string.internet_not_available))
             .assertIsDisplayed()
@@ -130,9 +126,9 @@ class TokensScreenTest {
 
     @Test
     fun tokens_success_balances() {
-        val balance = Balance(tokens.first(), Result.success(0.0))
+        val balance = Balance(tokens.first(), Result.success("1234"))
         val tokensState =
-            TokensState.Tokens("", emptyList(), BalancesState.Success(listOf(balance)))
+            TokensState.Tokens("", emptyList(), BalancesState.Success(persistentListOf(balance)))
 
         composeTestRule.setContent {
             Content(tokensState = tokensState)
@@ -146,7 +142,33 @@ class TokensScreenTest {
             .onNodeWithText(balance.token.name!!)
             .assertIsDisplayed()
         composeTestRule
-            .onNodeWithText(balance.balance.getOrThrow().toString())
+            .onNodeWithText(
+                "${
+                    balance.balance.getOrThrow()!!.toPlainString()
+                } ${balance.token.symbol}"
+            )
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun tokens_success_balance_with_error() {
+        val balance = Balance(tokens.first(), Result.failure(Throwable()))
+        val tokensState =
+            TokensState.Tokens("", emptyList(), BalancesState.Success(persistentListOf(balance)))
+
+        composeTestRule.setContent {
+            Content(tokensState = tokensState)
+        }
+
+        composeTestRule
+            .onNodeWithText(composeTestRule.activity.getString(R.string.search_tokens))
+            .assertIsDisplayed()
+            .assertIsEnabled()
+        composeTestRule
+            .onNodeWithText(balance.token.name!!)
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText(composeTestRule.activity.getString(R.string.error_occurred))
             .assertIsDisplayed()
     }
 

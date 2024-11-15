@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -18,6 +19,7 @@ interface TokensModule {
     fun getTokens(impl: GetTokensImpl): GetTokens
 
     companion object {
+        @Singleton
         @Provides
         fun ethExplorerApi(okHttpClient: OkHttpClient, moshi: Moshi) =
             Retrofit.Builder()

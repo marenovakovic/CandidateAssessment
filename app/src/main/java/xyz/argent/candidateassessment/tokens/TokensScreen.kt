@@ -96,7 +96,6 @@ fun TokensScreen(
             OutlinedTextField(
                 value = (tokensState as? TokensState.Tokens)?.query.orEmpty(),
                 onValueChange = onQueryChanged,
-                enabled = tokensState is TokensState.Tokens,
                 label = { Text(text = stringResource(R.string.search_tokens)) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -148,7 +147,7 @@ private fun Error(retry: () -> Unit) {
 @Composable
 private fun TokensScreenPreview() {
     CandidateAssessmentTheme {
-        val state = TokensState.Tokens("", tokens.take(3), BalancesState.Initial)
+        val state = TokensState.Tokens("", emptyList(), BalancesState.Initial)
 
         TokensScreen(
             tokensState = state,

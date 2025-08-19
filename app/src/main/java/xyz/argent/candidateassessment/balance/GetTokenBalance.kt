@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import xyz.argent.candidateassessment.app.Constants
+import xyz.argent.candidateassessment.balance.EtherscanApi.TokenBalanceResponse.Companion.MaxLimitReached
 import xyz.argent.candidateassessment.balance.persistence.BalanceEntity
 import xyz.argent.candidateassessment.balance.persistence.BalancesDao
 import xyz.argent.candidateassessment.tokens.Token
@@ -53,11 +54,11 @@ class GetTokenBalanceImpl @Inject constructor(
             .fold(
                 {
                     when {
-                        it == EtherscanApi.TokenBalanceResponse.MaxLimitReached -> {
+                        it == MaxLimitReached -> {
                             delay(backoffTimeMillis.value - (currentTimeMillis() - last.get()))
                             invoke(token)
                         }
-                        it.status == 0L && it.result != EtherscanApi.TokenBalanceResponse.MaxLimitReached.result ->
+                        it.status == 0L && it.result != MaxLimitReached.result ->
                             Result.failure(Throwable(it.result))
                         else -> Result.success(it.result)
                     }

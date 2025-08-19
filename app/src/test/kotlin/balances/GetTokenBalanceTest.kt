@@ -12,6 +12,8 @@ import xyz.argent.candidateassessment.app.Constants
 import xyz.argent.candidateassessment.balance.BackoffTimeMillis
 import xyz.argent.candidateassessment.balance.CurrentTimeMillis
 import xyz.argent.candidateassessment.balance.EtherscanApi
+import xyz.argent.candidateassessment.balance.EtherscanApi.TokenBalanceResponse
+import xyz.argent.candidateassessment.balance.EtherscanApi.TokenBalanceResponse.Companion.MaxLimitReached
 import xyz.argent.candidateassessment.balance.GetTokenBalance
 import xyz.argent.candidateassessment.balance.GetTokenBalanceImpl
 import xyz.argent.candidateassessment.balance.persistence.BalanceEntity
@@ -41,8 +43,8 @@ class GetTokenBalanceTest {
     fun `retry when max limit is reached`() = runTest {
         val token = tokens.first()
         val balance = "123456789"
-        val failure = EtherscanApi.TokenBalanceResponse.MaxLimitReached
-        val success = EtherscanApi.TokenBalanceResponse(1, "", balance)
+        val failure = MaxLimitReached
+        val success = TokenBalanceResponse(1, "", balance)
         var fail = true
         val api = spyk(
             object : EtherscanApi {
@@ -76,8 +78,8 @@ class GetTokenBalanceTest {
             val clockTick = 100
             val token = tokens.first()
             val balance = "123456789"
-            val failure = EtherscanApi.TokenBalanceResponse.MaxLimitReached
-            val success = EtherscanApi.TokenBalanceResponse(1, "", balance)
+            val failure = MaxLimitReached
+            val success = TokenBalanceResponse(1, "", balance)
             var fail = true
             val api = spyk(
                 object : EtherscanApi {
@@ -114,7 +116,7 @@ class GetTokenBalanceTest {
     @Test
     fun `returns failure for every error other than MaxLimitReached`() = runTest {
         val token = tokens.first()
-        val failure = EtherscanApi.TokenBalanceResponse(0, "", "error")
+        val failure = TokenBalanceResponse(0, "", "error")
         val api = spyk(
             object : EtherscanApi {
                 override suspend fun getTokenBalance(
